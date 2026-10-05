@@ -1,0 +1,9 @@
+{
+  "name": "ValheimDiscordRelay",
+  "version_number": "1.3.3",
+  "website_url": "",
+  "description": "Relay Valheim chat and shouts to Discord via webhooks, with client screenshots, automatic player death and boss death videos plus server lifecycle and intercepted player arrival-leaving notifications.",
+  "dependencies": [
+    "denikson-BepInExPack_Valheim-5.4.2350"
+  ]
+}

@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <OutputType>Library</OutputType>
+    <RootNamespace>ValheimDiscordRelay</RootNamespace>
+    <AssemblyName>ValheimDiscordRelay</AssemblyName>
+    <Version>1.3.3</Version>
+    <AssemblyVersion>1.3.3.0</AssemblyVersion>
+    <FileVersion>1.3.3.0</FileVersion>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <LangVersion>10</LangVersion>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="0Harmony">
+      <HintPath>References\0Harmony.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_guiutils">
+      <HintPath>References\assembly_guiutils.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_utils">
+      <HintPath>References\assembly_utils.dll</HintPath>
+    </Reference>
+    <Reference Include="assembly_valheim">
+      <HintPath>References\assembly_valheim.dll</HintPath>
+    </Reference>
+    <Reference Include="BepInEx">
+      <HintPath>References\BepInEx.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>References\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>References\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ImageConversionModule">
+      <HintPath>References\UnityEngine.ImageConversionModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule">
+      <HintPath>References\UnityEngine.ScreenCaptureModule.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="Common\RelayProtocol.cs" />
+    <Compile Include="Common\SharedConfig.cs" />
+    <Compile Include="Common\RelayDiagnostics.cs" />
+    <Compile Include="Common\BossCatalog.cs" />
+    <Compile Include="Common\BossConfig.cs" />
+    <Compile Include="Common\AdminConfig.cs" />
+    <Compile Include="Common\PlayerNotificationConfig.cs" />
+    <Compile Include="Common\SyncedConfig.cs" />
+    <Compile Include="Common\ServerSync\ConfigSync.cs" />
+
+    <Compile Include="Client\ClientPlugin.cs" />
+    <Compile Include="Client\ClientConfig.cs" />
+    <Compile Include="Client\ClientTextUtils.cs" />
+    <Compile Include="Client\AttackerInfo.cs" />
+    <Compile Include="Client\DeathQuotes.cs" />
+    <Compile Include="Client\DeathMessageBuilder.cs" />
+    <Compile Include="Client\SessionLifecycle.cs" />
+    <Compile Include="Client\DeathDetectionPatches.cs" />
+    <Compile Include="Client\ChatRelayPatches.cs" />
+    <Compile Include="Client\ClientCaptureService.cs" />
+    <Compile Include="Client\ClientCaptureService.DeathDetection.cs" />
+    <Compile Include="Client\ClientCaptureService.RollingBuffer.cs" />
+    <Compile Include="Client\ClientCaptureService.DeathVideo.cs" />
+    <Compile Include="Client\ClientCaptureService.Screenshot.cs" />
+    <Compile Include="Client\ClientCaptureService.Webhook.cs" />
+    <Compile Include="Client\ClientCaptureService.BossVideo.cs" />
+    <Compile Include="Client\ClientCaptureService.Quit.cs" />
+    <Compile Include="Client\BossKillTracker.cs" />
+    <Compile Include="Client\BossVideoRpc.cs" />
+    <Compile Include="Client\ScreenCapturePipeline.cs" />
+    <Compile Include="Client\WebPTool.cs" />
+    <Compile Include="Client\WebPAnimationMerger.cs" />
+    <Compile Include="Client\EmbeddedResource.cs" />
+
+    <Compile Include="Server\ServerPlugin.cs" />
+    <Compile Include="Server\ServerConfig.cs" />
+    <Compile Include="Server\ServerRelay.cs" />
+    <Compile Include="Server\WebhookWorker.cs" />
+    <Compile Include="Server\BossAnnouncer.cs" />
+    <Compile Include="Server\BossQuotes.cs" />
+    <Compile Include="Server\LifecyclePatches.cs" />
+    <Compile Include="Server\PlayerNotifications.cs" />
+
+    <Compile Include="Report\ReportConfig.cs" />
+    <Compile Include="Report\ReportProtocol.cs" />
+    <Compile Include="Report\ReportStats.cs" />
+    <Compile Include="Report\ReportEmbedBuilder.cs" />
+    <Compile Include="Report\ReportRpc.cs" />
+    <Compile Include="Report\ReportScheduler.cs" />
+    <Compile Include="Report\ReportTracker.cs" />
+    <Compile Include="Report\ReportPatches.cs" />
+  </ItemGroup>
+
+
+  <ItemGroup>
+    <EmbeddedResource Include="Build\EmbeddedWebP\*.*" Condition="Exists('Build\EmbeddedWebP')">
+      <LogicalName>ValheimDiscordRelay.EmbeddedWebP.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>
