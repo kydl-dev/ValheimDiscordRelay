@@ -33,18 +33,18 @@ The package contains one mod DLL. It contains both client and server components;
 
 ## What goes where
 
-Every feature that sends something to Discord has its own category, its own webhook setting and its own enable switch, so you can run only the parts you want and point each at its own channel.
+Every feature that sends something to Discord has its own webhook setting, so you can point each at its own channel.
 
-| Feature | Category | Sent by | Webhook setting | Sent as |
-| --- | --- | --- | --- | --- |
-| Normal chat | `[Chat]` | server | `Server - Normal Webhook URL` (falls back to `Server - Webhook URL`) | the player's name |
-| Shouts | `[Chat]` | server | `Server - Shout Webhook URL` (falls back to `Server - Webhook URL`) | the player's name |
-| Manual screenshots | `[Screenshots]` | client | `Server - Webhook URL` | the player's name (optional) |
-| Death message + video | `[Player Deaths]` | client | `Server - Webhook URL` | the player's name |
-| Boss announcement | `[Boss Death]` | server (embed) + client (video) | `Server - Webhook URL` | `Server - Webhook Username` |
-| Server up / down / restart | `[Server Notifications]` | server | `Server - Webhook URL` | `Server notifications` (or the webhook's own name) |
-| Player joined / left | `[Player Notifications]` | server | `Server - Webhook URL` | `Player notifications` |
-| Weekly report | `[Weekly Report]` | server | `Server - Webhook URL` | `Weekly report` |
+| Feature | Sent by | Webhook setting | Sent as |
+| --- | --- | --- | --- |
+| Normal chat | server | `[Chat]` `Normal Webhook URL` (falls back to `Webhook URL`) | the player's name |
+| Shouts | server | `[Chat]` `Shout Webhook URL` (falls back to `Webhook URL`) | the player's name |
+| Manual screenshots | client | `[Client]` `Screenshot Webhook URL` | the player's name (optional) |
+| Death message + video | client | `[Client]` `Death Video Webhook URL` | the player's name |
+| Boss announcement | server (embed) + client (video) | `[Boss Death]` `Webhook URL` | `Webhook Username` |
+| Server up / down / restart | server | `[Server Notifications]` `Webhook URL` | `Server notifications` (or the webhook's own name) |
+| Player joined / left | server | `[Player Notifications]` `Webhook URL` | `Player notifications` |
+| Weekly report | server | `[Weekly Report]` `Webhook URL` | `Weekly report` |
 
 ## Configuration
 
@@ -52,100 +52,78 @@ The mod uses one shared file:
 
 `BepInEx/config/ValheimDiscordRelay.cfg`
 
-### How the settings are named
-
-Settings are grouped by feature, one category per feature, and every setting name starts with who it belongs to:
-
-- **`Server - ...`** — set by the server admin. Either synced from the server to every player, or used only on the server (see the table below).
-- **`Client - ...`** — each player's own setting, kept in that player's own config. Nothing about it is synced.
-
-Every category has an **Enabled** switch so a feature can be turned off without touching the rest:
-
-- `Server - Enabled` — the admin's switch. Turning it off disables the feature for everyone. (Where the switch is synced, players receive the server's value.)
-- `Client - Enabled` — the player's switch. Turning it off opts that player's game out. Only categories where the player's game does something have one.
-
-A feature with both switches runs only when **both** are on. `[Admin]` has no Enabled switch because it is not a feature; it only controls the others.
-
-BepInEx writes a description above every setting in that file; the example below is shortened. Categories are written in this order.
+BepInEx writes a description above every setting in that file; the example below is shortened. Sections can appear in any order in the real file.
 
 ```ini
 ## ---- Admin: config lock and delivery logging ----------------------------
 [Admin]
-Server - Lock Configuration = true
-Server - Log Successful Sends = false
+Lock Configuration = true
+Log Successful Sends = false
 
-## ---- Chat: chat relay ----------------------------------------------------
+## ---- Chat: chat relay (server-side) -------------------------------------
 [Chat]
-Server - Enabled = true
-Server - Webhook URL =
-Server - Normal Webhook URL =
-Server - Shout Webhook URL =
-Server - Max Message Length = 1800
-Server - Name Display = NameOnly
-Server - Shout Prefix = <ESC>[2;31m
-Server - Normal Prefix = <ESC>[2;36m
-Server - Queue Limit = 100
-Server - Minimum Send Interval Ms = 250
-Client - Enabled = true
-Client - Max Message Length = 1000
-
-## ---- Manual screenshots --------------------------------------------------
-[Screenshots]
-Server - Enabled = true
-Server - Webhook URL =
-Client - Enabled = true
-Client - Key = PageUp
-Client - Include Player Name = true
-
-## ---- Player deaths: message and video ------------------------------------
-[Player Deaths]
-Server - Enabled = true
-Server - Webhook URL =
-Client - Enabled = true
-Client - Video Enabled = true
-Client - Video FPS = 30
-Client - Video Resolution = 960x540
-Client - Video Pre Duration = 4
-Client - Video Post Duration = 4
-
-## ---- Boss kills ----------------------------------------------------------
-[Boss Death]
-Server - Enabled = true
-Server - Webhook URL =
-Server - Webhook Username = Boss Death Announcement!
-Server - Video Source = Boss Owner
-Client - Enabled = true
-Client - Video Enabled = true
-Client - Video FPS = 30
-Client - Video Resolution = 960x540
-Client - Video Pre Duration = 4
-Client - Video Post Duration = 4
+Enabled = true
+Webhook URL =
+Normal Webhook URL =
+Shout Webhook URL =
+Max Message Length = 1800
+Name Display = NameOnly
+Shout Prefix = <ESC>[2;31m
+Normal Prefix = <ESC>[2;36m
+Queue Limit = 100
+Minimum Send Interval Ms = 250
 
 ## ---- Server up / down / restart -------------------------------------------
 [Server Notifications]
-Server - Enabled = true
-Server - Webhook URL =
-Server - Use Discord Webhook Name = false
-Server - Up Notification = true
-Server - Down Notification = true
-Server - Restart Notification = true
-Server - Restart Window Seconds = 120
+Enabled = true
+Webhook URL =
+Use Discord Webhook Name = false
+Server Up = true
+Server Down = true
+Server Restart = true
+Restart Window Seconds = 120
 
 ## ---- Player joined / left -------------------------------------------------
 [Player Notifications]
-Server - Enabled = true
-Server - Webhook URL =
-Server - Arrival Avatar URL =
-Server - Leave Avatar URL =
+Enabled = true
+Webhook URL =
+Arrival Avatar URL =
+Leave Avatar URL =
+
+## ---- Boss kills -----------------------------------------------------------
+[Boss Death]
+Enabled = true
+Webhook URL =
+Webhook Username = Boss Death Announcement!
+Video Source = Boss Owner
+Video Enabled = true
+Video FPS = 30
+Video Resolution = 960x540
+Video Pre Duration = 4
+Video Post Duration = 4
 
 ## ---- Weekly report --------------------------------------------------------
 [Weekly Report]
-Server - Enabled = true
-Server - Webhook URL =
-Server - Report Day = Sunday
-Server - Report Time = 20:00
-Server - Send Test Report = false
-Client - Enabled = true
+Enabled = true
+Webhook URL =
+Report Day = Sunday
+Report Time = 20:00
+Send Test Report = false
+
+## ---- Client features (every player). The two webhook URLs here are set on the
+## ---- SERVER by the admin and synced to every client.
+[Client]
+Enabled = true
+Max Message Length = 1000
+Screenshot Key = PageUp
+Screenshot Webhook URL =
+Include Player Name = true
+Death Video Enabled = true
+Death Video FPS = 30
+Death Video Resolution = 960x540
+Death Video Pre Duration = 4
+Death Video Post Duration = 4
+Death Video Webhook URL =
 ```
 
 `<ESC>` stands for the real escape character (ASCII 27) that BepInEx writes into the file for the two ANSI prefixes; leave those two settings alone unless you want other colours.
@@ -154,90 +132,80 @@ Client - Enabled = true
 
 The mod uses ServerSync. The server's values for the settings in the middle column are sent to every connected player, and a change made in-game (Configuration Manager, F1) by an admin flows back to the server, which saves it. **Webhooks are set by the admin, on the server.** Players do not enter their own: a client's own value for a synced setting is replaced by the server's while connected.
 
-| Category | Synced (admin-controlled) | Server only, never synced | Per player (`Client - ...`) |
-| --- | --- | --- | --- |
-| `[Admin]` | `Server - Lock Configuration`, `Server - Log Successful Sends` | — | — |
-| `[Chat]` | `Server - Enabled`, `Server - Max Message Length`, `Server - Name Display`, `Server - Shout Prefix`, `Server - Normal Prefix`, `Server - Queue Limit`, `Server - Minimum Send Interval Ms` | the three chat webhook URLs | `Client - Enabled`, `Client - Max Message Length` |
-| `[Screenshots]` | `Server - Enabled`, **`Server - Webhook URL`** | — | `Client - Enabled`, `Client - Key`, `Client - Include Player Name` |
-| `[Player Deaths]` | `Server - Enabled`, **`Server - Webhook URL`** | — | `Client - Enabled`, `Client - Video ...` |
-| `[Boss Death]` | `Server - Enabled`, `Server - Webhook Username`, `Server - Video Source`, **`Server - Webhook URL`** | — | `Client - Enabled`, `Client - Video ...` |
-| `[Server Notifications]` | `Server - Use Discord Webhook Name` | `Server - Enabled`, `Server - Webhook URL`, the up / down / restart switches, `Server - Restart Window Seconds` | — |
-| `[Player Notifications]` | `Server - Enabled`, `Server - Arrival Avatar URL`, `Server - Leave Avatar URL` | `Server - Webhook URL` | — |
-| `[Weekly Report]` | `Server - Enabled`, **`Server - Report Day`, `Server - Report Time`, `Server - Send Test Report`** | `Server - Webhook URL` | `Client - Enabled` |
+| Section | Synced (admin-controlled) | Local only |
+| --- | --- | --- |
+| `[Admin]` | `Lock Configuration`, `Log Successful Sends` | nothing |
+| `[Chat]` | `Enabled`, `Max Message Length`, `Name Display`, `Shout Prefix`, `Normal Prefix`, `Queue Limit`, `Minimum Send Interval Ms` | the three chat webhook URLs (server only, never sent to clients) |
+| `[Server Notifications]` | `Use Discord Webhook Name` | `Webhook URL` (server only) and everything else |
+| `[Player Notifications]` | `Enabled`, `Arrival Avatar URL`, `Leave Avatar URL` | `Webhook URL` (server only) |
+| `[Boss Death]` | `Enabled`, `Webhook Username`, `Video Source`, **`Webhook URL`** | the `Video ...` settings |
+| `[Weekly Report]` | `Enabled`, **`Report Day`, `Report Time`, `Send Test Report`** | `Webhook URL` (server only) |
+| `[Client]` | **`Screenshot Webhook URL`, `Death Video Webhook URL`** | everything else |
 
 In short:
 
 - **Webhooks only the server uses** (chat, server notifications, player notifications, weekly report) live in the server's config only. They are never sent to clients, so no client can see or change them.
-- **Webhooks the clients upload to** (screenshots, death videos, boss videos) are set by the admin in the *server's* config and synced to every client. Players cannot set their own.
+- **Webhooks the clients upload to** (screenshots, death videos, boss videos) are set by the admin in the *server's* config — including the `[Client]` section there — and synced to every client. Players cannot set their own.
 - **The weekly report schedule and the test trigger** are synced and admin-controlled.
 
 ### `[Admin]`
 
-- `Server - Lock Configuration` (default `true`): only players listed in the server's `adminlist.txt` can change the synced settings, which includes all of the above. Set it to `false` to let ANY connected player change them — webhook URLs and the report schedule included — so leave it on for a public server.
-- `Server - Log Successful Sends` (default `false`) — log every successful Discord delivery from every category: chat, server notifications, player notifications, boss deaths and the weekly report (in the server's log), and screenshot / death video / boss video uploads (in the log of the game that uploaded them).
+- `Lock Configuration` (default `true`): only players listed in the server's `adminlist.txt` can change the synced settings, which includes all of the above. Set it to `false` to let ANY connected player change them — webhook URLs and the report schedule included — so leave it on for a public server.
+- `Log Successful Sends` (default `false`) — log every successful Discord delivery from every category: chat, server notifications, player notifications, boss deaths and the weekly report (in the server's log), and screenshot / death video / boss video uploads (in the log of the game that uploaded them).
 
 ### `[Chat]`
 
-- `Server - Enabled` — enable the server-side chat relay.
-- `Server - Webhook URL` — fallback Discord webhook, used when the specific Normal/Shout webhook is empty.
-- `Server - Normal Webhook URL` — webhook for normal chat; falls back to `Server - Webhook URL`.
-- `Server - Shout Webhook URL` — webhook for shouts; falls back to `Server - Webhook URL`.
-- `Server - Max Message Length` — maximum chat text sent to Discord (100–1900).
-- `Server - Name Display` — the Discord username format: `NameOnly` (`Bjorn`), `NameWithNumber` (`Bjorn [1]`, `Bjorn [2]` for duplicate character names) or `NameWithIdSuffix` (`Bjorn [5678]`, the last 4 digits of the platform ID). Default `NameOnly`.
-- `Server - Shout Prefix` — ANSI prefix for shouts; default is dim red.
-- `Server - Normal Prefix` — ANSI prefix for normal chat; default is dim cyan.
-- `Server - Queue Limit` — maximum queued Discord messages; the oldest are dropped when it is full (10–1000).
-- `Server - Minimum Send Interval Ms` — pacing between webhook requests (50–5000).
-- `Client - Enabled` — send the chat typed in this game to the server for relaying. Turn off to keep your own chat out of Discord.
-- `Client - Max Message Length` — maximum chat text sent from the client to the server (1–1000).
-
-### `[Screenshots]`
-
-- `Server - Enabled` — synced. Turn off to disable manual screenshots for every player.
-- `Server - Webhook URL` — Discord webhook for manual screenshots. Set by the admin in the server's config and synced to every client.
-- `Client - Enabled` — allow the screenshot hotkey in this game.
-- `Client - Key` — screenshot hotkey; default `PageUp`. Set to `None` to disable.
-- `Client - Include Player Name` — use the local Valheim character name as the Discord username for manual screenshots.
-
-### `[Player Deaths]`
-
-- `Server - Enabled` — synced. Turn off to disable death messages (shout, Discord message and video) for every player.
-- `Server - Webhook URL` — Discord webhook for death videos and the death message. Set by the admin in the server's config and synced to every client.
-- `Client - Enabled` — announce this player's deaths: the in-game shout and the Discord message. Turn off to keep your deaths out of chat and Discord.
-- `Client - Video Enabled` — record a death video. When off, the death message is still sent, without a video. See [Death messages](#death-messages).
-- `Client - Video FPS` — `20` or `30`.
-- `Client - Video Resolution` — `480x270`, `640x360` or `960x540`.
-- `Client - Video Pre Duration` / `Client - Video Post Duration` — `2` to `4` seconds before / after death.
-
-The default death-video configuration is **30 FPS, 960x540, 4 seconds before death and 4 seconds after death**.
-
-### `[Boss Death]`
-
-- `Server - Enabled` — announce boss deaths. Synced.
-- `Server - Webhook URL` — the boss webhook. The server posts the embed to it, and the player whose game owns the boss uploads the video to it. Set it once on the server; it is synced to every client.
-- `Server - Webhook Username` — name shown as the sender of both messages; default `Boss Death Announcement!`.
-- `Server - Video Source` — whose game records the boss video: `Boss Owner` (default) or `Last Attacker`. Synced from the server and admin-controlled. **With `Last Attacker` the video is recorded by that player's own game, so that player's `[Player Deaths] Client - Video FPS` and `Client - Video Resolution` apply (and `[Player Deaths] Client - Video Enabled` must be on), not the boss owner's and not the admin's.** See [Boss death announcements](#boss-death-announcements).
-- `Client - Enabled` — take part in boss announcements from this game: measure the damage you deal to bosses and record the boss video when asked. Turn off to opt out completely.
-- `Client - Video Enabled` — upload the boss death video (on the game that records it).
-- `Client - Video FPS` (`20` or `30`), `Client - Video Resolution` (`480x270`, `640x360`, `960x540`) — only used when `[Player Deaths] Client - Video Enabled` is off (see [Boss death announcements](#boss-death-announcements)); never used for a `Last Attacker` video.
-- `Client - Video Pre Duration`, `Client - Video Post Duration` — `2` to `4` seconds before / after the boss dies (the recording player's own values).
+- `Enabled` — enable the server-side chat relay.
+- `Webhook URL` — fallback Discord webhook, used when the specific Normal/Shout webhook is empty.
+- `Normal Webhook URL` — webhook for normal chat; falls back to `Webhook URL`.
+- `Shout Webhook URL` — webhook for shouts; falls back to `Webhook URL`.
+- `Max Message Length` — maximum chat text sent to Discord (100–1900).
+- `Name Display` — the Discord username format: `NameOnly` (`Bjorn`), `NameWithNumber` (`Bjorn [1]`, `Bjorn [2]` for duplicate character names) or `NameWithIdSuffix` (`Bjorn [5678]`, the last 4 digits of the platform ID). Default `NameOnly`.
+- `Shout Prefix` — ANSI prefix for shouts; default is dim red.
+- `Normal Prefix` — ANSI prefix for normal chat; default is dim cyan.
+- `Queue Limit` — maximum queued Discord messages; the oldest are dropped when it is full (10–1000).
+- `Minimum Send Interval Ms` — pacing between webhook requests (50–5000).
 
 ### `[Server Notifications]`
 
-- `Server - Enabled` — enable server up/down/restart notifications.
-- `Server - Webhook URL` — the webhook for them.
-- `Server - Use Discord Webhook Name` — unchecked: messages are sent as **Server notifications**. Checked: no username is sent, so Discord shows the name set on the webhook itself.
-- `Server - Up Notification`, `Server - Down Notification`, `Server - Restart Notification` — turn each message on or off.
-- `Server - Restart Window Seconds` — a startup within this many seconds of a clean shutdown (including boot and world load) is reported as a restart; a later one as "is up" (10–3600, default 120).
+- `Enabled` — enable server up/down/restart notifications.
+- `Webhook URL` — the webhook for them.
+- `Use Discord Webhook Name` — unchecked: messages are sent as **Server notifications**. Checked: no username is sent, so Discord shows the name set on the webhook itself.
+- `Server Up`, `Server Down`, `Server Restart` — turn each message on or off.
+- `Restart Window Seconds` — a startup within this many seconds of a clean shutdown (including boot and world load) is reported as a restart; a later one as "is up" (10–3600, default 120).
 
 ### `[Player Notifications]`
 
-- `Server - Enabled`, `Server - Webhook URL`, `Server - Arrival Avatar URL`, `Server - Leave Avatar URL` — see [Player notifications](#player-notifications).
+- `Enabled`, `Webhook URL`, `Arrival Avatar URL`, `Leave Avatar URL` — see [Player notifications](#player-notifications).
+
+### `[Boss Death]`
+
+- `Enabled` — announce boss deaths.
+- `Webhook URL` — the boss webhook. The server posts the embed to it, and the player whose game owns the boss uploads the video to it. Set it once on the server; it is synced to every client.
+- `Webhook Username` — name shown as the sender of both messages; default `Boss Death Announcement!`.
+- `Video Source` — whose game records the boss video: `Boss Owner` (default) or `Last Attacker`. Synced from the server and admin-controlled. **With `Last Attacker` the video is recorded by that player's own game, so that player's `[Client] Death Video FPS` and `Death Video Resolution` apply (and `[Client] Death Video Enabled` must be on), not the boss owner's and not the admin's.** See [Boss death announcements](#boss-death-announcements).
+- `Video Enabled` — upload the boss death video (on the game that records it).
+- `Video FPS` (`20` or `30`), `Video Resolution` (`480x270`, `640x360`, `960x540`) — only used when `[Client] Death Video Enabled` is off (see [Boss death announcements](#boss-death-announcements)); never used for a `Last Attacker` video.
+- `Video Pre Duration`, `Video Post Duration` — `2` to `4` seconds before / after the boss dies (the recording player's own values).
 
 ### `[Weekly Report]`
 
-- `Server - Enabled`, `Server - Webhook URL`, `Server - Report Day`, `Server - Report Time`, `Server - Send Test Report` — see [Weekly report](#weekly-report).
-- `Client - Enabled` — include this player in the report: this game measures the kills and damage you deal and reports your deaths to the server. Turn off to opt out.
+- `Enabled`, `Webhook URL`, `Report Day`, `Report Time`, `Send Test Report` — see [Weekly report](#weekly-report).
+
+### `[Client]`
+
+- `Enabled` — enable local chat interception and client capture features.
+- `Max Message Length` — maximum chat text sent from the client to the server (1–1000).
+- `Screenshot Key` — screenshot hotkey; default `PageUp`. Set to `None` to disable.
+- `Screenshot Webhook URL` — Discord webhook for manual screenshots. Set by the admin in the server's config and synced to every client.
+- `Include Player Name` — use the local Valheim character name as the Discord username for manual screenshots.
+- `Death Video Enabled` — enable automatic death videos **and the Discord death message** (see [Death messages](#death-messages)).
+- `Death Video FPS` — `20` or `30`.
+- `Death Video Resolution` — `480x270`, `640x360` or `960x540`.
+- `Death Video Pre Duration` / `Death Video Post Duration` — `2` to `4` seconds before / after death.
+- `Death Video Webhook URL` — Discord webhook for death videos and the death message. Set by the admin in the server's config and synced to every client.
+
+The default death-video configuration is **30 FPS, 960x540, 4 seconds before death and 4 seconds after death**.
 
 ## Chat relay
 
@@ -247,7 +215,7 @@ Normal chat uses dim cyan ANSI formatting (`ESC[2;36m`); shouts use dim red (`ES
 
 The server delivers webhooks sequentially, with queueing, pacing, and retry handling for Discord rate limits and temporary HTTP errors.
 
-Valheim's own "I have arrived!" shout is a special case: it is dropped while `[Player Notifications] Server - Enabled` is on, and relayed like any other shout when it is off. See [Player notifications](#player-notifications).
+Valheim's own "I have arrived!" shout is a special case: it is dropped while `[Player Notifications] Enabled` is on, and relayed like any other shout when it is off. See [Player notifications](#player-notifications).
 
 Death messages are shouted in game chat, but that shout is **not** sent to the normal Discord chat webhook; Discord gets the death message through the death webhook instead.
 
@@ -260,9 +228,9 @@ Press `PageUp` by default to capture the final rendered Valheim frame, including
 When the local player dies, the client works out what killed them from Valheim's own hit data, picks a random message for that kind of death, and:
 
 1. **shouts it in game chat** (so everybody in the world sees it; the shout is not relayed to the chat webhook), and
-2. **sends it to Discord** through `[Player Deaths] Server - Webhook URL`, together with the death video (or alone, see below).
+2. **sends it to Discord** through `[Client] Death Video Webhook URL`, together with the death video (or alone, see below).
 
-Both the shout and the Discord part need `[Player Deaths] Server - Enabled` and `Client - Enabled` on. The Discord part also needs a `Server - Webhook URL`; if it is missing the shout still happens and the log says why nothing was sent to Discord. With `Client - Video Enabled` off the Discord message is still sent, just without a video. Deaths are counted for the [weekly report](#weekly-report) whatever the `[Player Deaths]` settings are (the report has its own switches).
+The Discord part needs `[Client] Death Video Enabled` on **and** a `Death Video Webhook URL`; if either is missing the shout still happens and the log says why nothing was sent to Discord. Deaths are also counted for the [weekly report](#weekly-report) whatever these two settings are.
 
 ### How the killer is found
 
@@ -366,7 +334,7 @@ These use one fixed sentence each and are not random:
 
 - If Valheim stored its own death text for the player, that is used (`{Player} <text>`).
 - If the cause cannot be resolved from the available hit data: `{Player} got killed by Unknown.`
-- **Repeat deaths:** if the player dies again while the previous death is still being recorded or encoded (or within 30 seconds of it), no second video is made; Discord gets a three-line message instead (in one code block): the normal random death quote, then `{Player} died again in a very short time, maybe fight an enemy of your size: T.W.I.G.`, then `No video recording of this unfortunate death will be presented.`
+- **Repeat deaths:** if the player dies again while the previous death is still being recorded or encoded (or within 30 seconds of it), no second video is made; Discord gets a short message instead: `{Player} seems to be weak, they died again. Try sparring with the dummy!`
 
 ### Discord formatting
 
@@ -374,7 +342,7 @@ Every Discord death message is sent inside a code block. When the enemy name car
 
 ## Death videos
 
-When the local player dies, the client records the configured period immediately before and after the death and uploads the result as an animated WebP, directly from the client, to the configured `[Player Deaths] Server - Webhook URL`. Each upload carries the death message from [above](#death-messages).
+When the local player dies, the client records the configured period immediately before and after the death and uploads the result as an animated WebP, directly from the client, to the configured `Death Video Webhook URL`. Each upload carries the death message from [above](#death-messages).
 
 The rolling pre/post-death frame buffer is kept in memory, not on disk. Disk is only touched once a death actually happens, to write the relevant frames out for `img2webp` (an external process, so it needs real files) — those staged frames and old WebP outputs are then swept automatically (a background check every 5 minutes removes anything older than 24 hours).
 
@@ -382,7 +350,7 @@ WebP quality/compression is chosen automatically and isn't user-configurable: fa
 
 ## Boss death announcements
 
-Use `[Boss Death]` for boss kill announcements. When a boss dies, the server posts an embed to the boss webhook, and — at the same time, as a separate message — the player whose game owned the boss (or, with `Server - Video Source = Last Attacker`, the player who landed the last hit) uploads a short video of the moment it died.
+Use `[Boss Death]` for boss kill announcements. When a boss dies, the server posts an embed to the boss webhook, and — at the same time, as a separate message — the player whose game owned the boss (or, with `Video Source = Last Attacker`, the player who landed the last hit) uploads a short video of the moment it died.
 
 **The embed**
 
@@ -408,16 +376,16 @@ Solo:   Solo victory! Eikthyr never stood a chance against that much stubbornnes
 
 **How damage is counted.** Valheim does not keep per-player damage totals, so the mod measures the health each hit removes from the boss (after resistances), per attacking player. Valheim only applies damage on the game that owns the boss, so that client reports the numbers to the server in small batches; the server adds them up per boss, so the totals survive the boss changing owner mid-fight. The mod must be installed on the client that owns the boss for its damage to be counted.
 
-**The video.** One game records and uploads it, chosen by `Server - Video Source` (below). By default (`Boss Owner`) that is the client that owns the boss when it dies (that is normally someone near it). Its pre and post durations are `Client - Video Pre Duration` / `Client - Video Post Duration`.
+**The video.** One game records and uploads it, chosen by `Video Source` (below). By default (`Boss Owner`) that is the client that owns the boss when it dies (that is normally someone near it). Its pre and post durations are `Video Pre Duration` / `Video Post Duration`.
 
-- While `[Player Deaths] Client - Video Enabled` is **on** (and death messages are enabled for that player), the boss video is cut from the frames the player-death recorder is already capturing, so it uses the **death video's FPS and resolution** and a boss fight costs no extra screen capture or encoding.
-- While it is **off**, a separate recorder runs only while that client is fighting a boss and uses `[Boss Death] Client - Video FPS` and `Client - Video Resolution`.
+- While `[Client] Death Video Enabled` is **on**, the boss video is cut from the frames the player-death recorder is already capturing, so it uses the **death video's FPS and resolution** and a boss fight costs no extra screen capture or encoding.
+- While it is **off**, a separate recorder runs only while that client is fighting a boss and uses `Video FPS` and `Video Resolution`.
 
-When a video is going to be uploaded, the announcement embed is held back until the video has been encoded and is about to upload, so the two appear in Discord together (embed first, the video as soon as its upload finishes). If the video is not ready within 75 seconds, or you leave the game first, the embed is sent anyway. If the `[Boss Death] Server - Webhook URL` is not set, or `Client - Video Enabled` is off on the recording client, no video is uploaded and the embed is posted immediately by the server.
+When a video is going to be uploaded, the announcement embed is held back until the video has been encoded and is about to upload, so the two appear in Discord together (embed first, the video as soon as its upload finishes). If the video is not ready within 75 seconds, or you leave the game first, the embed is sent anyway. If that client has no `Webhook URL` set, or `Video Enabled` is off, no video is uploaded and the embed is posted immediately by the server.
 
-**`Server - Video Source`: Boss Owner or Last Attacker.** The boss owner is whoever's game happens to own the boss when it dies, and that player can be facing away from it, which gives a video of nothing. `Last Attacker` records the video on the game of the player who landed the last hit instead, who is almost always looking at the boss. It is off by default (`Boss Owner`) and is a synced, admin-controlled setting.
+**`Video Source`: Boss Owner or Last Attacker.** The boss owner is whoever's game happens to own the boss when it dies, and that player can be facing away from it, which gives a video of nothing. `Last Attacker` records the video on the game of the player who landed the last hit instead, who is almost always looking at the boss. It is off by default (`Boss Owner`) and is a synced, admin-controlled setting.
 
-- **The recording player's settings apply, not the admin's and not the boss owner's:** `[Player Deaths] Client - Video FPS` and `Client - Video Resolution`, `[Boss Death] Client - Video Pre Duration` / `Client - Video Post Duration`, and `Client - Video Enabled`. The boss video is cut from the death-recorder frames, so `[Player Deaths] Client - Video Enabled` has to be **on** for that player; otherwise their game declines.
+- **The recording player's settings apply, not the admin's and not the boss owner's:** `[Client] Death Video FPS` and `Death Video Resolution`, `Video Pre Duration` / `Video Post Duration`, and `Video Enabled`. The boss video is cut from the death-recorder frames, so `[Client] Death Video Enabled` has to be **on** for that player; otherwise their game declines.
 - How it works: the boss owner remembers who last damaged the boss (a player hit more than 20 seconds before the kill does not count), and when the boss dies it asks that player's game to record, through a message that the server simply forwards. The owner keeps recording its own clip as a fallback and drops it as soon as the attacker's game accepts.
 - **Fallback to the boss owner's video:** if the last attacker has no mod or an older build, has video off, is already busy with another clip, or does not answer within about 1.5 seconds after the clip ends, the boss owner's own video is used. A second video is never posted: if the attacker answers too late, the owner tells it to stand down.
 - If the boss owner itself landed the last hit, nothing changes (its own video is the last attacker's video). With a dedicated server that owns the boss, `Last Attacker` is the only way to get a video at all, because a dedicated server cannot record one.
@@ -437,8 +405,8 @@ Server **My World** is going down.
 ```
 
 - The server name is **bold** in every message.
-- Messages are sent with the username **Server notifications**. Tick `Server - Use Discord Webhook Name` to send no username at all, so Discord shows the name set on the webhook itself (Channel settings → Integrations → Webhooks).
-- A clean shutdown followed by a startup within `Server - Restart Window Seconds` is reported as a restart; a longer gap as "is up". The "down" message is sent synchronously so it is not lost when the process exits.
+- Messages are sent with the username **Server notifications**. Tick `Use Discord Webhook Name` to send no username at all, so Discord shows the name set on the webhook itself (Channel settings → Integrations → Webhooks).
+- A clean shutdown followed by a startup within `Restart Window Seconds` is reported as a restart; a longer gap as "is up". The "down" message is sent synchronously so it is not lost when the process exits.
 
 ## Player notifications
 
@@ -451,11 +419,11 @@ Server **My World** is going down.
 
 `Population` is the number of players online after the join / leave (the host of a game-hosted world counts too).
 
-- `Server - Enabled` (synced, admin-controlled).
+- `Enabled` (synced, admin-controlled).
   - **On:** Valheim's own arrival message ("I have arrived!") is intercepted on the client and ignored — it is **not** sent to any Discord webhook. The mod posts the messages above instead.
   - **Off:** nothing is intercepted. The game's arrival message is relayed like any other shout through the normal chat webhook, and no join/leave messages are posted.
-- `Server - Webhook URL` — the webhook for these messages. Server-side only; never sent to clients.
-- `Server - Arrival Avatar URL` / `Server - Leave Avatar URL` — optional http/https image URLs used as the webhook icon for join / leave messages. Leave one empty to use the webhook's default Discord icon. Both are synced and admin-controlled.
+- `Webhook URL` — the webhook for these messages. Server-side only; never sent to clients.
+- `Arrival Avatar URL` / `Leave Avatar URL` — optional http/https image URLs used as the webhook icon for join / leave messages. Leave one empty to use the webhook's default Discord icon. Both are synced and admin-controlled.
 
 **How joins and leaves are detected.** Valheim sends "I have arrived!" on *every* spawn (including after each death) and sends **no message at all when a player leaves** — the game has no such text. So the server watches the connected players instead: one join per connection, one leave per disconnect, nothing on respawn. A server shutdown is not announced as everybody leaving.
 
@@ -463,12 +431,11 @@ Server **My World** is going down.
 
 `[Weekly Report]` posts one embed per week through its own webhook, sent as **Weekly report**. Its code lives in its own `Report/` folder.
 
-- `Server - Enabled` — synced from the server. Clients only collect and send numbers while it is on.
-- `Client - Enabled` — this player takes part in the report. Turn it off on a client and that player's kills, damage and deaths are not collected.
-- `Server - Webhook URL` — the report webhook. Server-side only; never sent to clients.
-- `Server - Report Day` — default `Sunday`. Synced; only admins can change it (while `[Admin] Server - Lock Configuration` is on).
-- `Server - Report Time` — `HH:mm`, in the server's local time zone; default `20:00`. Synced; only admins can change it.
-- `Server - Send Test Report` — debug helper. Set to `true` to post the report as it stands right now, marked "(test)". It does not reset the statistics and turns itself back to `false`. It fires when an admin changes the setting (Configuration Manager, or a live config reload on the server) or at the next server start. Synced; only admins can trigger it, and clients never act on it.
+- `Enabled` — synced from the server. Clients only collect and send numbers while it is on.
+- `Webhook URL` — the report webhook. Server-side only; never sent to clients.
+- `Report Day` — default `Sunday`. Synced; only admins can change it (while `Lock Configuration` is on).
+- `Report Time` — `HH:mm`, in the server's local time zone; default `20:00`. Synced; only admins can change it.
+- `Send Test Report` — debug helper. Set to `true` to post the report as it stands right now, marked "(test)". It does not reset the statistics and turns itself back to `false`. It fires when an admin changes the setting (Configuration Manager, or a live config reload on the server) or at the next server start. Synced; only admins can trigger it, and clients never act on it.
 
 The embed covers the period since the previous report:
 
@@ -508,7 +475,7 @@ The webhooks the **clients upload to** — screenshots, death videos and boss vi
 
 The chat, server-notification, player-notification and weekly-report webhooks are only used by the server. They are never synced, so clients cannot see them.
 
-All of these can only be changed by admins while `[Admin] Server - Lock Configuration` is on (the default). With it off, any player could replace a synced webhook URL.
+All of these can only be changed by admins while `Lock Configuration` is on (the default). With it off, any player could replace a synced webhook URL.
 
 ## Logs and troubleshooting
 
@@ -517,9 +484,9 @@ Everything is written to `BepInEx/cache/ValheimDiscordRelay.log` (kept for 24 ho
 Common causes when nothing arrives in Discord:
 
 - The webhook URL for that feature is empty (the log warns about it; the weekly report warns at most once an hour). For screenshots, death videos and boss videos the URL must be set in the **server's** config, because that value is what clients receive.
-- The feature's `Server - Enabled` is off, or on a client that category's `Client - Enabled` is off.
-- Death messages: `[Player Deaths] Client - Enabled` is off on that client, or `[Player Deaths] Server - Webhook URL` is empty on the server.
-- Boss video: `[Boss Death] Server - Webhook URL` is empty on the server, or `Client - Video Enabled` is off on the client that records it. With `Server - Video Source = Last Attacker`, that is the last attacker's client, and its `[Player Deaths] Client - Video Enabled` must be on too; if it is not, the boss owner's video is used (the log on both sides says which one was chosen).
+- The feature's `Enabled` is off, or on a client `[Client] Enabled` is off.
+- Death messages: `[Client] Death Video Enabled` is off on that client, or `Death Video Webhook URL` is empty on the server.
+- Boss video: `[Boss Death] Webhook URL` is empty on the server, or `Video Enabled` is off on the client that records it. With `Video Source = Last Attacker`, that is the last attacker's client, and its `[Client] Death Video Enabled` must be on too; if it is not, the boss owner's video is used (the log on both sides says which one was chosen).
 - Mob kills / damage missing from the weekly report: the player who owned the creature does not have the mod.
 
 ## Project layout
