@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    ValheimDiscordRelay mod. Everything shared by the user's mods (references from the shared reference folder, net48, no debug symbols,
+    the shared code Kydl.Common / Kydl.Ui, copy to Assets + build, deploy to the Gale test profile) comes from Claude\shared\Kydl.Mod.props / .targets.
+    Add here only what is special about this mod.
+    Build: dotnet build "ValheimDiscordRelay-Mod\ValheimDiscordRelay.csproj" -c Release
+  -->
+  <Import Project="..\..\Claude\shared\Kydl.Mod.props" />
+
+  <PropertyGroup>
+    <AssemblyName>ValheimDiscordRelay</AssemblyName>
+    <RootNamespace>ValheimDiscordRelay</RootNamespace>
+    <PackageId>ValheimDiscordRelay</PackageId>
+    <!-- no AssetBundle: this mod ships code only (BundleName empty = Kydl.Mod.targets embeds and copies no bundle) -->
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- special to this mod (screenshots and video clips); the DLLs are in Claude\ref -->
+    <Reference Include="UnityEngine.ImageConversionModule"><HintPath>$(ValheimRefs)\UnityEngine.ImageConversionModule.dll</HintPath><Private>false</Private></Reference>
+    <Reference Include="UnityEngine.ScreenCaptureModule"><HintPath>$(ValheimRefs)\UnityEngine.ScreenCaptureModule.dll</HintPath><Private>false</Private></Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- img2webp.exe + its DLLs, embedded and unpacked at run time by Client\WebPTool.cs. They are git-ignored (no *.dll / *.exe in git):
+         WebP\prepare-webp.ps1 downloads the official libwebp build into WebP\EmbeddedWebP. Without them the mod still builds, but cannot encode clips. -->
+    <EmbeddedResource Include="WebP\EmbeddedWebP\*.*" Condition="Exists('WebP\EmbeddedWebP')">
+      <LogicalName>ValheimDiscordRelay.EmbeddedWebP.%(Filename)%(Extension)</LogicalName>
+    </EmbeddedResource>
+  </ItemGroup>
+
+  <Import Project="..\..\Claude\shared\Kydl.Mod.targets" />
+</Project>

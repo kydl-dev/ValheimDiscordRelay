@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Integration tests: package files (Hexium rules), version consistency, settings layout of the built DLL. No game running. -->
+  <PropertyGroup>
+    <AssemblyName>ValheimDiscordRelay.IntegrationTests</AssemblyName>
+    <RootNamespace>ValheimDiscordRelay.Tests.Integration</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="UnityEngine.CoreModule"><HintPath>$(ValheimRefs)\UnityEngine.CoreModule.dll</HintPath><Private>true</Private></Reference>
+    <!-- PatchTargetsTests: reads the mod and the game DLLs with Mono.Cecil (metadata only) -->
+    <Reference Include="Mono.Cecil"><HintPath>$(ValheimRefs)\Mono.Cecil.dll</HintPath><Private>true</Private></Reference>
+  </ItemGroup>
+</Project>

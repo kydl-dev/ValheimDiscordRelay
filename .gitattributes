@@ -1,0 +1,28 @@
+* text=auto
+
+*.cs      text diff=csharp
+*.csproj  text
+*.sln     text
+*.props   text
+*.md      text
+*.json    text
+*.ps1     text
+*.cmd     text eol=crlf
+
+# Unity text assets (force text serialization in Unity: Edit > Project Settings > Editor)
+*.meta    text
+*.unity   text
+*.prefab  text
+*.mat     text
+*.asset   text
+
+# Binary
+*.blend   binary
+*.fbx     binary
+*.dll     binary
+*.png     binary
+*.jpg     binary
+*.psd     binary
+*.wav     binary
+*.mp3     binary
+*.ogg     binary

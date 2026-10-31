@@ -1,0 +1,87 @@
+# --- agent / local ---
+CLAUDE.local.md
+.claude/settings.local.json
+_agent/.session
+_agent/CATCHUP.txt
+.env
+.env.*
+secrets/
+*.token
+
+# --- references live in the shared reference folder (never in this repo); an old per-project copy stays ignored ---
+/*-Mod/ref/
+/*-Tests/.nuget/
+/*-Unity/ref/
+/_backup*/
+
+# --- build output copied into the mod's Assets folder (asset bundles stay tracked) ---
+/*-Mod/Assets/*.dll
+/*-Mod/Assets/*.pdb
+
+# --- .NET / Visual Studio / Rider ---
+bin/
+obj/
+.vs/
+.idea/
+*.user
+*.suo
+*.nupkg
+TestResults/
+Environment.props
+
+# --- Unity (project root = *-Unity) ---
+/*-Unity/[Ll]ibrary/
+/*-Unity/[Tt]emp/
+/*-Unity/[Oo]bj/
+/*-Unity/[Bb]uild/
+/*-Unity/[Bb]uilds/
+/*-Unity/[Ll]ogs/
+/*-Unity/[Uu]ser[Ss]ettings/
+/*-Unity/AssetBundles/
+/*-Unity/Deliverables/
+/*-Unity/Assets/UnityMCP/
+/*-Unity/Assets/UnityMCP.meta
+*.unitypackage
+/*-Unity/[Mm]emoryCaptures/
+/*-Unity/[Rr]ecordings/
+/*-Unity/*.csproj
+/*-Unity/*.sln
+/*-Unity/*.slnx
+/*-Unity/*.pidb
+/*-Unity/*.booproj
+/*-Unity/*.unityproj
+/*-Unity/*.apk
+/*-Unity/*.aab
+/*-Unity/sysinfo.txt
+/*-Unity/crashlytics-build.properties
+/*-Unity/Assets/AssetStoreTools*
+
+# --- Blender ---
+*.blend1
+*.blend2
+*.blend@
+__pycache__/
+
+# --- OS ---
+Thumbs.db
+.DS_Store
+Desktop.ini
+
+# --- never public / never tracked (user rules, PROJECT_RULES.md section 19): do not remove these lines ---
+/_agent/
+/_testruns/
+.claude/
+CLAUDE.md
+/Claude outputs/
+*.dll
+*.exe
+*.zip
+*.nupkg
+/*-Tests/.nuget/
+# release-gate output (report + zip): rebuilt by _agent/tools/release-gate.ps1
+/*-Mod/release/*/release-gate.*
+/*-Mod/release/*/_stage/
+/*-Mod/release/*/*.zip
+
+# test-quality output (coverage, Stryker): rebuilt by _agent/tools/test-quality.ps1
+/*-Tests/_quality/
