@@ -16,7 +16,7 @@ namespace ValheimDiscordRelay.Server
     /// Valheim's own arrival shout is still intercepted on the client (see ChatSendTextPatch) so it never reaches Discord
     /// while this feature is on.
     ///
-    /// Everything here runs on the main thread, from ServerPlugin.Update().
+    /// Everything here runs on the main thread, from the plugin Update().
     /// </summary>
     internal static class PlayerNotifications
     {
@@ -270,7 +270,7 @@ namespace ValheimDiscordRelay.Server
 
         private static void Send(string content, bool arrival, string label)
         {
-            if (!PlayerNotificationConfig.Enabled.Value)
+            if (!PlayerNotificationConfig.On)
                 return;
 
             string url = PlayerNotificationConfig.WebhookUrl.Value == null

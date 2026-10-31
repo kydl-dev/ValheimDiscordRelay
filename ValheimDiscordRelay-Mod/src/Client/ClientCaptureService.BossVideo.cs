@@ -102,8 +102,8 @@ namespace ValheimDiscordRelay.Client
                 return;
             }
 
-            bool wanted = BossConfig.Enabled.Value &&
-                          BossConfig.ClientEnabled.Value &&
+            bool wanted = BossConfig.On &&
+                          BossConfig.ClientOn &&
                           BossConfig.VideoEnabled.Value &&
                           !string.IsNullOrWhiteSpace(BossConfig.WebhookUrl.Value);
 
@@ -223,7 +223,7 @@ namespace ValheimDiscordRelay.Client
         /// <returns>True if a video will be made (the caller may then hold the announcement for it).</returns>
         internal bool BeginBossVideo(string bossName, string avatarUrl, string announceKey, long remoteOwner = 0)
         {
-            if (!BossConfig.ClientEnabled.Value || !BossConfig.Enabled.Value || !BossConfig.VideoEnabled.Value)
+            if (!BossConfig.ClientOn || !BossConfig.On || !BossConfig.VideoEnabled.Value)
                 return false;
 
             if (ZNet.instance != null && ZNet.instance.IsDedicated())

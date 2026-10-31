@@ -1,0 +1,12 @@
+{
+  "name": "hub-page",
+  "description": "The mod is listed in the KY hub (its config entries are the automatic Settings tab) and the hub opens to it",
+  "timeout": 60,
+  "steps": [
+    { "do": "hook", "name": "kc.hubOpen", "args": { "mod": "com.kydldev.ValheimDiscordRelay" }, "expect": true },
+    { "do": "wait", "seconds": 1 },
+    { "do": "hook", "name": "kc.hubMods", "contains": "com.kydldev.ValheimDiscordRelay" },
+    { "do": "hook", "name": "kc.hubClose" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "ValheimDiscordRelay" } ]
+}

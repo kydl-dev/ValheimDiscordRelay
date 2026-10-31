@@ -80,7 +80,7 @@ namespace ValheimDiscordRelay.Client
                 if (player == null || player != Player.m_localPlayer)
                     return;
 
-                ClientPlugin.CaptureService?.CheckLocalPlayerDeath(player);
+                ValheimDiscordRelayPlugin.CaptureService?.CheckLocalPlayerDeath(player);
             }
             catch (Exception ex)
             {
@@ -102,7 +102,7 @@ namespace ValheimDiscordRelay.Client
                 if (__instance == null || __instance != Player.m_localPlayer)
                     return;
 
-                ClientPlugin.CaptureService?.CheckLocalPlayerDeath(__instance, true);
+                ValheimDiscordRelayPlugin.CaptureService?.CheckLocalPlayerDeath(__instance, true);
             }
             catch (Exception ex)
             {
@@ -122,7 +122,7 @@ namespace ValheimDiscordRelay.Client
                 if (player == null || player != Player.m_localPlayer)
                     return;
 
-                ClientCaptureService service = ClientPlugin.CaptureService;
+                ClientCaptureService service = ValheimDiscordRelayPlugin.CaptureService;
                 if (service != null)
                     service.RecordLocalPlayerHit(hit);
             }

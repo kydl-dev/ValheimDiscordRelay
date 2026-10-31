@@ -377,7 +377,7 @@ namespace ValheimDiscordRelay.Server
                 HttpWebRequest request = (HttpWebRequest)WebRequest.Create(item.WebhookUrl);
                 request.Method = "POST";
                 request.ContentType = "application/json";
-                request.UserAgent = "ValheimDiscordRelay/" + ServerPlugin.PluginVersion;
+                request.UserAgent = "ValheimDiscordRelay/" + ValheimDiscordRelayPlugin.ModVersion;
                 request.Timeout = timeoutMs;
                 request.ReadWriteTimeout = timeoutMs;
 

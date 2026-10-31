@@ -51,7 +51,7 @@ namespace ValheimDiscordRelay.Server
         }
 
         /// <summary>
-        /// Loads the bosses announced before the last shutdown. Called once from ServerPlugin.Awake(). Never throws.
+        /// Loads the bosses announced before the last shutdown. Called once from the plugin Awake(). Never throws.
         /// </summary>
         internal static void Initialize()
         {
@@ -81,7 +81,7 @@ namespace ValheimDiscordRelay.Server
 
         private static void OnBossDamageRpc(long sender, ZPackage package)
         {
-            if (!BossConfig.Enabled.Value)
+            if (!BossConfig.On)
                 return;
 
             try
@@ -125,7 +125,7 @@ namespace ValheimDiscordRelay.Server
 
         private static void OnBossDeathRpc(long sender, ZPackage package)
         {
-            if (!BossConfig.Enabled.Value)
+            if (!BossConfig.On)
                 return;
 
             try
@@ -215,7 +215,7 @@ namespace ValheimDiscordRelay.Server
         /// <param name="hoverName">The game's display name, used only when the boss is not in the catalog.</param>
         internal static void HandleDeath(string key, string prefab, string hoverName)
         {
-            if (!BossConfig.Enabled.Value || string.IsNullOrWhiteSpace(key))
+            if (!BossConfig.On || string.IsNullOrWhiteSpace(key))
                 return;
 
             // A non-final phase of a multi-phase boss (Kall Fimbulbringer) is not a kill. Its damage stays in Fights

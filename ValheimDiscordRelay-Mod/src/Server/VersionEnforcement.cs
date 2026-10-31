@@ -46,7 +46,7 @@ namespace ValheimDiscordRelay.Server
         /// <param name="isServer">True when this game is the server (dedicated or hosted from the menu).</param>
         internal static void Apply(bool isServer)
         {
-            bool strict = isServer && AdminConfig.RequireSameVersion.Value;
+            bool strict = isServer && ModSettings.On && AdminConfig.RequireSameVersion.Value;
             SyncedConfig.Sync.RequireExactVersion = strict;
 
             if (!isServer)
@@ -63,7 +63,7 @@ namespace ValheimDiscordRelay.Server
             if (!_reported)
             {
                 _reported = true;
-                RelayDiagnostics.Info("Version check is ON: only players with " + SyncedConfig.Sync.DisplayName + " " + ServerPlugin.PluginVersion +
+                RelayDiagnostics.Info("Version check is ON: only players with " + SyncedConfig.Sync.DisplayName + " " + ValheimDiscordRelayPlugin.ModVersion +
                                       " can join. Players without the mod, or with another version, are refused (see 'Server - Require Same Version').");
             }
         }

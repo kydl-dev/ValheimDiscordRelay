@@ -79,7 +79,7 @@ namespace ValheimDiscordRelay.Client
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(webhookUrl);
             request.Method = "POST";
             request.ContentType = "multipart/form-data; boundary=" + boundary;
-            request.UserAgent = "ValheimDiscordRelay/" + ClientPlugin.PluginVersion;
+            request.UserAgent = "ValheimDiscordRelay/" + ValheimDiscordRelayPlugin.ModVersion;
             request.Timeout = 30000;
             request.ReadWriteTimeout = 30000;
             request.ContentLength = body.Length;
@@ -219,7 +219,7 @@ namespace ValheimDiscordRelay.Client
             HttpWebRequest request = (HttpWebRequest)WebRequest.Create(webhookUrl);
             request.Method = "POST";
             request.ContentType = "application/json";
-            request.UserAgent = "ValheimDiscordRelay/" + ClientPlugin.PluginVersion;
+            request.UserAgent = "ValheimDiscordRelay/" + ValheimDiscordRelayPlugin.ModVersion;
             request.Timeout = timeoutMilliseconds;
             request.ReadWriteTimeout = timeoutMilliseconds;
 

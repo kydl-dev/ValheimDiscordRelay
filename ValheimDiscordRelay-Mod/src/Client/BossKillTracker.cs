@@ -180,7 +180,7 @@ namespace ValheimDiscordRelay.Client
                 return;
             }
 
-            if (!BossConfig.ClientEnabled.Value || !BossConfig.Enabled.Value)
+            if (!BossConfig.ClientOn || !BossConfig.On)
                 return;
 
             bool isBoss;
@@ -218,7 +218,7 @@ namespace ValheimDiscordRelay.Client
 
             float healthAfter = boss.GetHealth();
 
-            ClientCaptureService capture = ClientPlugin.CaptureService;
+            ClientCaptureService capture = ValheimDiscordRelayPlugin.CaptureService;
             if (capture != null)
                 capture.NoteBossEngaged();
 
@@ -622,7 +622,7 @@ namespace ValheimDiscordRelay.Client
             if (character == null || character is Player)
                 return false;
 
-            if (!BossConfig.ClientEnabled.Value || !BossConfig.Enabled.Value)
+            if (!BossConfig.ClientOn || !BossConfig.On)
                 return false;
 
             try
@@ -772,7 +772,7 @@ namespace ValheimDiscordRelay.Client
             // Start the video first: whether one is coming decides whether the announcement waits for it.
             // This client's own clip is always started; with Video Source = Last Attacker it is the fallback that is
             // dropped once the last attacker's game has taken the video over.
-            ClientCaptureService capture = ClientPlugin.CaptureService;
+            ClientCaptureService capture = ValheimDiscordRelayPlugin.CaptureService;
             bool ownVideo = capture != null &&
                             capture.BeginBossVideo(info != null ? info.DisplayName : (hoverName.Length > 0 ? hoverName : prefab),
                                                    info != null ? info.AvatarUrl : null,

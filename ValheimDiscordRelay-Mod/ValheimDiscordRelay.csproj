@@ -11,6 +11,8 @@
     <AssemblyName>ValheimDiscordRelay</AssemblyName>
     <RootNamespace>ValheimDiscordRelay</RootNamespace>
     <PackageId>ValheimDiscordRelay</PackageId>
+    <!-- 2.0.0: one plugin; the KY hub (F6, the Settings tab with every config entry) and the shared log come from KydlCore (a hard dependency) -->
+    <KydlUseCore>true</KydlUseCore>
     <!-- no AssetBundle: this mod ships code only (BundleName empty = Kydl.Mod.targets embeds and copies no bundle) -->
   </PropertyGroup>
 

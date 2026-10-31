@@ -94,7 +94,7 @@ namespace ValheimDiscordRelay.Client
         internal void Initialize()
         {
             DebugLog("=== ValheimDiscordRelay death-video logger started ===");
-            DebugLog("Plugin version: " + ClientPlugin.PluginVersion + " (" + ClientPlugin.DescribeBuild() + ")");
+            DebugLog("Plugin version: " + ValheimDiscordRelayPlugin.ModVersion + " (" + ValheimDiscordRelayPlugin.DescribeBuild() + ")");
 
             _rootDirectory = Path.Combine(BepInEx.Paths.CachePath, "ValheimDiscordRelay");
 

@@ -28,20 +28,10 @@ namespace ValheimDiscordRelay.Tests.Integration
 
         static string Str(string key) { return Manifest()[key] as string; }
 
-        // This mod is ONE DLL with TWO plugins (client in the game, server on a dedicated server); both carry the version.
-        static readonly string[] PluginFiles = { Path.Combine("Client", "ClientPlugin.cs"), Path.Combine("Server", "ServerPlugin.cs") };
-
-        static string PluginConst(string file, string name)
+        static string PluginConst(string name)
         {
-            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", file)), "const string " + name + @"\s*=\s*""([^""]*)""");
-            Assert.That(m.Success, Is.True, "const " + name + " not found in src/" + file);
-            return m.Groups[1].Value;
-        }
-
-        static string AssemblyName()
-        {
-            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.ModDir, "ValheimDiscordRelay.csproj")), @"<AssemblyName>([^<]+)</AssemblyName>");
-            Assert.That(m.Success, Is.True, "<AssemblyName> not found in the csproj");
+            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "Plugin.cs")), "const string " + name + @"\s*=\s*""([^""]*)""");
+            Assert.That(m.Success, Is.True, "const " + name + " not found in src/Plugin.cs");
             return m.Groups[1].Value;
         }
 
@@ -56,19 +46,17 @@ namespace ValheimDiscordRelay.Tests.Integration
         }
 
         [Test]
-        public void Manifest_Name_MatchesTheAssemblyNameAndHexiumCharacterRules()
+        public void Manifest_Name_MatchesThePluginNameAndHexiumCharacterRules()
         {
-            // the plugins' display names ("Valheim Discord Relay - Client") are for the BepInEx log; the package name is the DLL name
-            Assert.That(Str("name"), Is.EqualTo(AssemblyName()));
+            Assert.That(Str("name"), Is.EqualTo(PluginConst("ModName")));
             Assert.That(Str("name"), Does.Match(@"^[A-Za-z0-9_]{1,128}$"), "Hexium: 1 - 128 letters, digits and underscores");
         }
 
         [Test]
-        public void Manifest_Version_IsSemVerAndEqualsBothPluginVersions()
+        public void Manifest_Version_IsSemVerAndEqualsPluginModVersion()
         {
             Assert.That(Str("version_number"), Does.Match(SemVer.ToString()));
-            foreach (var file in PluginFiles)
-                Assert.That(Str("version_number"), Is.EqualTo(PluginConst(file, "PluginVersion")), "manifest.json and " + file + " PluginVersion must agree");
+            Assert.That(Str("version_number"), Is.EqualTo(PluginConst("ModVersion")), "manifest.json and Plugin.ModVersion must agree");
         }
 
         [Test]
@@ -81,29 +69,48 @@ namespace ValheimDiscordRelay.Tests.Integration
         }
 
         [Test]
-        public void Manifest_Dependencies_UseFormatAndContainBepInEx()
+        public void Manifest_Dependencies_UseFormatAndContainBepInExAndJotunn()
         {
             var deps = Dependencies();
             foreach (var d in deps) Assert.That(DependencyFormat.IsMatch(d), Is.True, "bad dependency string: " + d);
             Assert.That(deps.Any(d => d.IndexOf("BepInExPack_Valheim", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+            Assert.That(deps.Any(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+        }
+
+        /// The KydlCore version asked for by the plugin attribute: [BepInDependency(KydlCore.Plugin.ModGuid, "x.y.z")] (or the GUID text).
+        static string PluginCoreDependencyVersion()
+        {
+            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "Plugin.cs")), @"\[BepInDependency\(\s*(KydlCore\.Plugin\.ModGuid|""com\.kydldev\.KydlCore"")\s*,\s*""(\d+\.\d+\.\d+)""");
+            return m.Success ? m.Groups[2].Value : null;
         }
 
         [Test]
-        public void Manifest_Jotunn_IsListedOnlyWhenTheCodeUsesIt()
+        public void KydlCore_IsAHardDependency_InPluginAndManifest_WithTheSameVersion()
         {
-            // The template mod depends on Jotunn; this one does not (no BepInDependency, and the dedicated server need not have it).
-            var code = string.Join("\n", Directory.GetFiles(Path.Combine(TestPaths.ModDir, "src"), "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
-            var uses = Regex.IsMatch(code, @"BepInDependency\([^)]*Jotunn");
-            var listed = Dependencies().Any(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0);
+            var attribute = PluginCoreDependencyVersion();
+            Assert.That(attribute, Is.Not.Null, "Plugin.cs needs [BepInDependency(KydlCore.Plugin.ModGuid, \"x.y.z\")] (hard dependency with a minimum version, every KydlDev mod requires KydlCore)");
+            var dep = Dependencies().FirstOrDefault(d => d.StartsWith("KydlDev-KydlCore-", StringComparison.Ordinal));
+            Assert.That(dep, Is.Not.Null, "manifest.json dependencies need KydlDev-KydlCore-x.y.z");
+            Assert.That(dep.Substring("KydlDev-KydlCore-".Length), Is.EqualTo(attribute), "the KydlCore version in manifest.json and in the [BepInDependency] attribute must agree");
+        }
 
-            Assert.That(listed, Is.EqualTo(uses), "manifest.json lists Jotunn = " + listed + ", but the code's [BepInDependency(Jotunn)] = " + uses);
+        [Test]
+        public void KydlCore_Dependency_IsNotNewerThanTheKydlCoreTheModIsBuiltAgainst()
+        {
+            // the KydlCore project next to this one (E:\Projects\Valheim\KydlCore): its manifest.json version is the newest KydlCore there is (KydlCore.dll carries no file version)
+            var manifest = Environment.GetEnvironmentVariable("KYDL_CORE_MANIFEST") ?? Path.GetFullPath(Path.Combine(TestPaths.ProjectRoot, "..", "KydlCore", "KydlCore-Mod", "manifest.json"));
+            Assume.That(File.Exists(manifest), "KydlCore manifest.json not found (set KYDL_CORE_MANIFEST)");
+            var core = (Dictionary<string, object>)new JavaScriptSerializer().DeserializeObject(File.ReadAllText(manifest));
+            var newest = Version.Parse((string)core["version_number"]);
+            var declared = Version.Parse(PluginCoreDependencyVersion());
+
+            Assert.That(declared, Is.LessThanOrEqualTo(newest), "the mod asks for a newer KydlCore than the newest one (" + newest + ")");
         }
 
         [Test]
         public void Manifest_JotunnDependency_IsNotNewerThanTheJotunnTheModIsBuiltAgainst()
         {
-            var dep = Dependencies().FirstOrDefault(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0);
-            Assume.That(dep, Is.Not.Null, "the manifest has no Jotunn dependency (this mod does not use Jotunn)");
+            var dep = Dependencies().First(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0);
             var declared = Version.Parse(dep.Substring(dep.LastIndexOf('-') + 1));
             var dll = Path.Combine(TestPaths.RefDir, "Jotunn.dll");
             Assume.That(File.Exists(dll), "Jotunn.dll not in the reference folder");

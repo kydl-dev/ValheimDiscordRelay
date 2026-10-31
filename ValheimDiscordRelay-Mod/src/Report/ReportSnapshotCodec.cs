@@ -140,13 +140,13 @@ namespace ValheimDiscordRelay.Report
         {
             ReportWindowData data = new ReportWindowData();
 
-            if (ReportConfig.Enabled == null || !ReportConfig.Enabled.Value)
+            if (!ReportConfig.On)
             {
                 data.Status = ReportProtocol.SnapshotStatusReportDisabled;
                 return data;
             }
 
-            if (ReportConfig.WindowEnabled == null || !ReportConfig.WindowEnabled.Value)
+            if (!ReportConfig.WindowOn)
             {
                 data.Status = ReportProtocol.SnapshotStatusWindowDisabled;
                 return data;

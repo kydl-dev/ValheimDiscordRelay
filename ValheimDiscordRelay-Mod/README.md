@@ -55,6 +55,7 @@ The mod has no chat or console commands; everything is configuration, hotkeys an
 
 - Valheim 1.0.12
 - BepInEx 5.4.2351 (BepInEx 5.4.23.5)
+- [Jotunn](https://thunderstore.io/c/valheim/p/ValheimModding/Jotunn/) and **KydlCore** (the KydlDev shared runtime: the KY hub window, the Settings tab and the shared log). Both are installed with the mod by a mod manager, and are needed on the dedicated server as well.
 - Install the mod on the dedicated server **and on every player's game, all with exactly the same version.** The server refuses players who have no mod, an older version or a newer version (see [Version check](#version-check)).
 - Worlds hosted from Valheim's own menu (no dedicated server) work too: install the mod on the host and set the webhook URLs in the host's config. The same version check applies to the players who join the host.
 - Death videos, boss videos and clips are encoded with a bundled **Windows program** (libwebp's `img2webp.exe`). A game that cannot run it still sends the death and boss messages, without the video; a clip then fails with a notice in game.
@@ -63,15 +64,15 @@ The mod has no chat or console commands; everything is configuration, hotkeys an
 
 Install the Thunderstore/Hexium package, or place `ValheimDiscordRelay.dll` in `BepInEx/plugins/ValheimDiscordRelay/`. Do this on the server and on every client.
 
-**After an update, delete the old config file (`BepInEx/config/ValheimDiscordRelay.cfg`) before starting the game.** Settings are added, renamed and removed between versions, and a stale file can leave you with missing or ignored settings. Start the game once so a fresh file is written, then fill in your webhooks again.
+**Updating from 1.x:** version 2.0.0 is one plugin with a new id (`com.kydldev.ValheimDiscordRelay`) and one new config file, `BepInEx/config/com.kydldev.ValheimDiscordRelay.cfg`. The old `ValheimDiscordRelay.cfg` is no longer read: remove it, start the game once so the new file is written, then fill in your webhooks again (or paste them into the KY hub, see below). Each section's `Enable` switch is now simply `Enable`, and the `[Admin]` section is now `[General]`. Remove the old 1.x plugin file so only one copy loads.
 
 ## Quick start
 
 1. In Discord, create a webhook for each feature you want (Channel settings → Integrations → Webhooks). You may use one channel for everything, but see [Security and privacy](#security-and-privacy) for the webhooks that players' games can read.
-2. Start the dedicated server once with the mod installed so `BepInEx/config/ValheimDiscordRelay.cfg` is created.
+2. Start the dedicated server once with the mod installed so `BepInEx/config/com.kydldev.ValheimDiscordRelay.cfg` is created.
 3. Stop the server, open the file and paste each webhook URL into its `Server - Webhook URL` setting (see [what goes where](#how-the-pieces-fit-together)). A feature whose webhook is empty sends nothing.
 4. Start the server. Players who join with the same mod version receive the shared webhooks and settings automatically; they do not enter webhooks themselves.
-5. Optional: set `[Admin] Server - Log Successful Sends = true` for a while to see every delivery in the log.
+5. Optional: set `[General] Server - Log Successful Sends = true` for a while to see every delivery in the log.
 
 Everything is enabled by default; with no webhook set, a feature simply logs a warning and does nothing.
 
@@ -99,27 +100,28 @@ Who measures what:
 
 ## Configuration
 
-Everything is in one file: `BepInEx/config/ValheimDiscordRelay.cfg` (also visible in Configuration Manager, F1). BepInEx writes a description above every setting.
+Everything is in one file: `BepInEx/config/com.kydldev.ValheimDiscordRelay.cfg`. Every entry is also on the **Settings tab of this mod in the KY hub (F6)** and in Configuration Manager (F1). Admins can change the server's values there while connected, and the change is saved on the server. BepInEx writes a description above every setting.
 
 Setting names tell you who they belong to:
 
 - **`Server - ...`** — set by the server admin. Either **synced** to every player, or **server only** (used by the server and never sent anywhere).
 - **`Client - ...`** — each player's own setting, never synced.
 
-Most categories have a `Server - Enabled` switch (admin, affects everyone) and a `Client - Enabled` switch (the player opting out). **A feature that has both runs only when both are on.**
+Every category has an `Enable` switch (admin, affects everyone) and most have a `Client - Enabled` switch (the player opting out). **A feature that has both runs only when both are on.** `[General] EnableAll` (on by default) is the master switch: while it is off the whole mod is inert on that machine, and the same is true of a category whose `Enable` is off.
 
 ### What is synced
 
-The mod uses ServerSync. Players do not enter webhooks; the admin sets them in the **server's** config.
+The mod uses ServerSync for the shared settings and a small admin-only channel for the server-only ones. Players do not enter webhooks; the admin sets them in the **server's** config, in the file or live in the KY hub (F6).
 
 - Webhooks the **players' games upload to** (screenshots, clips, death videos and messages, boss videos) are synced to every client. This is needed because each game posts its own file straight to Discord. It means **these URLs are not secret**; see [Security and privacy](#security-and-privacy).
-- Webhooks **only the server uses** (chat, server notifications, player notifications, weekly report) stay on the server and are never sent to clients.
-- Settings marked *synced* below are sent to players and can only be changed by admins while `[Admin] Server - Lock Configuration` is on.
+- Webhooks **only the server uses** (chat, server notifications, player notifications, weekly report) stay on the server and are never sent to ordinary players. An admin's game fetches them over a separate admin-only channel (the server checks `adminlist.txt` on every request), so the admin can read and change them in the KY hub; nobody else receives them.
+- Settings marked *synced* below are sent to players and can only be changed by admins while `[General] Server - Lock Configuration` is on; other players see them locked in the KY hub.
 
-### `[Admin]`
+### `[General]`
 
 | Setting | Default | |
 | --- | --- | --- |
+| `EnableAll` | `true` | Master switch of this mod on this machine. Off = nothing is relayed, captured or measured. |
 | `Server - Lock Configuration` | `true` | Synced. Only players in the server's `adminlist.txt` can change synced settings from their game. If `false`, **any** connected player can change them, webhook URLs included. Leave it on for a public server. |
 | `Server - Require Same Version` | `true` | Server only. The server refuses players who do not have exactly the server's version of this mod, including players without it. See [Version check](#version-check). |
 | `Server - Log Successful Sends` | `false` | Synced. Log every successful Discord delivery (the server logs its own, each player's game logs its own uploads). |
@@ -128,7 +130,7 @@ The mod uses ServerSync. Players do not enter webhooks; the admin sets them in t
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Enable the chat relay. |
+| `Enable` | `true` | Synced. Enable the chat relay. |
 | `Server - Webhook URL` | empty | Server only. Fallback, used when the Normal / Shout webhook is empty. |
 | `Server - Normal Webhook URL`, `Server - Shout Webhook URL` | empty | Server only. Webhooks for normal chat and for shouts. |
 | `Server - Max Message Length` | `1800` | Synced. Longest text sent to Discord (100–1900). |
@@ -143,7 +145,7 @@ The mod uses ServerSync. Players do not enter webhooks; the admin sets them in t
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Turn off to disable screenshots for every player. |
+| `Enable` | `true` | Synced. Turn off to disable screenshots for every player. |
 | `Server - Webhook URL` | empty | Synced. The screenshot webhook. |
 | `Client - Enabled` | `true` | Allow the screenshot key in this game. |
 | `Client - Key` | `PageUp` | `None` disables it. Works while other keys (walking, Shift) are held. |
@@ -153,7 +155,7 @@ The mod uses ServerSync. Players do not enter webhooks; the admin sets them in t
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Turn off to disable clips for every player. |
+| `Enable` | `true` | Synced. Turn off to disable clips for every player. |
 | `Server - Webhook URL` | empty | Synced. The clips webhook. |
 | `Client - Enabled` | `true` | Allow the clip key in this game. |
 | `Client - Key` | `PageDown` | `None` disables it. For two keys together write both, e.g. `F9 + LeftControl`: hold both, in any order; other keys held at the same time are ignored. |
@@ -166,7 +168,7 @@ Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` 
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Turn off to disable death messages, shouts and videos for every player. |
+| `Enable` | `true` | Synced. Turn off to disable death messages, shouts and videos for every player. |
 | `Server - Webhook URL` | empty | Synced. Webhook for death messages and videos. |
 | `Client - Enabled` | `true` | Announce this player's deaths (in-game shout and Discord message). |
 | `Client - Video Enabled` | `true` | Record a death video. When off, the message is still sent, without a video. It also keeps the frame buffer that boss videos and clips reuse. |
@@ -181,7 +183,7 @@ Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` 
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Announce boss deaths. |
+| `Enable` | `true` | Synced. Announce boss deaths. |
 | `Server - Webhook URL` | empty | Synced. Used for both the embed and the video. |
 | `Server - Webhook Username` | `Boss Death Announcement!` | Synced. Sender name of the embed and the video. |
 | `Server - Video Source` | `Boss Owner` | Synced. Whose game records the boss video: `Boss Owner` or `Last Attacker`. |
@@ -194,7 +196,7 @@ Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` 
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Server only. Enable the feature. |
+| `Enable` | `true` | Admin only. Enable the feature. |
 | `Server - Webhook URL` | empty | Server only. |
 | `Server - Use Discord Webhook Name` | `false` | Synced. Off: messages are sent as **Server notifications**. On: Discord shows the name set on the webhook itself. |
 | `Server - Up Notification`, `Server - Down Notification`, `Server - Restart Notification` | `true` | Server only. Turn each message on or off. |
@@ -204,7 +206,7 @@ Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` 
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. On: the mod posts its own join / leave messages and Valheim's "I have arrived!" shout is not relayed. Off: nothing is posted here, and the arrival shout is relayed as a normal shout. |
+| `Enable` | `true` | Synced. On: the mod posts its own join / leave messages and Valheim's "I have arrived!" shout is not relayed. Off: nothing is posted here, and the arrival shout is relayed as a normal shout. |
 | `Server - Webhook URL` | empty | Server only. |
 | `Server - Arrival Avatar URL`, `Server - Leave Avatar URL` | empty | Synced. Optional `http(s)` image URLs used as the webhook icon for join / leave messages. Anything else is ignored with one warning. |
 
@@ -212,7 +214,7 @@ Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` 
 
 | Setting | Default | |
 | --- | --- | --- |
-| `Server - Enabled` | `true` | Synced. Collect the statistics and post the report. Turning it off also stops games from collecting. |
+| `Enable` | `true` | Synced. Collect the statistics and post the report. Turning it off also stops games from collecting. |
 | `Server - Webhook URL` | empty | Server only. |
 | `Server - Report Day` | `Sunday` | Synced. Day the report is posted. |
 | `Server - Report Time` | `20:00` | Synced. `HH:mm`, in the **server's** time zone. An invalid value falls back to `20:00` with a warning. |
@@ -263,7 +265,7 @@ When the local player dies, the game works out what killed them from Valheim's h
 1. **shouts it in game chat** 5 seconds after the death (so it never ends up in the video), and
 2. **sends it to Discord** through `[Player Deaths] Server - Webhook URL`, in a code block, together with the death video.
 
-Both need `[Player Deaths] Server - Enabled` and `Client - Enabled` on. Without a webhook the shout still happens and the log says why nothing went to Discord. Logging out or quitting is never counted as a death.
+Both need `[Player Deaths] Enable` and `Client - Enabled` on. Without a webhook the shout still happens and the log says why nothing went to Discord. Logging out or quitting is never counted as a death.
 
 **Which message.**
 
@@ -395,7 +397,7 @@ Press `Home` (default) to open a window with the same numbers as the Discord rep
 - **What is sent:** the reply carries the top 100 players, the last 50 boss kills and the top 5 of each ranking per player; the totals are always complete. Players' games accept replies and period resets only from the server.
 - **Behaviour:** while the window is open your character does not move or attack and the mouse cursor is free. The window can be dragged by its title bar and will not open while the chat has focus or the inventory, a menu, a shop or the map is open. Keyboard and mouse only; there is no gamepad control.
 - **Size:** it opens compact. Drag the bottom-right corner to resize; the size is remembered (`Client - Window Width` / `Height`). It never becomes smaller than its content needs.
-- It needs the mod on the server (this version or newer). Without it the window says the server did not answer. It is turned off for everyone with `[Weekly Report] Server - Window Enabled`, or while `[Weekly Report] Server - Enabled` is off; a notice at the top left says so.
+- It needs the mod on the server (this version or newer). Without it the window says the server did not answer. It is turned off for everyone with `[Weekly Report] Server - Window Enabled`, or while `[Weekly Report] Enable` is off; a notice at the top left says so.
 
 #### Styling the window (CSS)
 
@@ -421,7 +423,7 @@ The window is drawn with Unity's UI Toolkit and styled by a USS-style sheet (a s
 
 A server (a dedicated server, or a world hosted from the game's menu) lets a player in only when the player runs **exactly the same version of this mod as the server**. Refused: players without the mod, with an older version and with a newer version. They are disconnected before they enter the world and see Valheim's "Incompatible version" message (a game cannot show anything more specific to a player who does not have the mod). The server's log (`BepInEx/LogOutput.log`) says who was refused and why, for example `Disconnect: The client (Steam_7656...) has version 1.3.4; this server requires Valheim Discord Relay version 1.3.5 exactly.`
 
-- Turn it off with `[Admin] Server - Require Same Version = false` (server only, not synced). It applies to the next player who connects.
+- Turn it off with `[General] Server - Require Same Version = false` (server only, not synced). It applies to the next player who connects.
 - It only restricts who joins *your* server. A player who has this mod can still join other servers that do not have it; a game never becomes strict about the server it connects to.
 - Builds from before this check do not announce their version, so they are refused too.
 - The version compared is the mod's own version (`manifest.json` / the DLL). Update the server and the players together.
@@ -439,7 +441,7 @@ A server (a dedicated server, or a world hosted from the game's menu) lets a pla
 
 | File | Purpose |
 | --- | --- |
-| `BepInEx/config/ValheimDiscordRelay.cfg` | All settings. |
+| `BepInEx/config/com.kydldev.ValheimDiscordRelay.cfg` | All settings. |
 | `BepInEx/config/ValheimDiscordRelay.report.uss` | Style sheet of the in-game report window, Classic style (created on first use). |
 | `BepInEx/config/ValheimDiscordRelay.report.modern.uss` | The same for the Modern style (created the first time that style is used). |
 | `BepInEx/cache/ValheimDiscordRelay.log` | The mod's own log, kept for 24 hours. |
@@ -454,7 +456,7 @@ A server (a dedicated server, or a world hosted from the game's menu) lets a pla
 
 - **Players can read the shared webhooks.** The webhooks players' games upload to (screenshots, clips, death videos, boss videos) are sent to every client, so any player can read them (for example in Configuration Manager) and post to that channel. Use a dedicated webhook and channel for each, never one that can reach a staff channel, and delete the webhook in Discord if it leaks. The server logs one line at start-up naming which of them are set.
 - **Webhooks only the server uses** (chat, server notifications, player notifications, weekly report) are never synced.
-- **Lock the configuration.** Keep `[Admin] Server - Lock Configuration` on (the default); otherwise any connected player can change synced settings, webhooks included.
+- **Lock the configuration.** Keep `[General] Server - Lock Configuration` on (the default); otherwise any connected player can change synced settings, webhooks included.
 - **What leaves a player's PC:** only what the features above send, to the Discord webhooks you configured: chat text, the screenshots / clips / videos the player triggers (or that a death or boss kill triggers), and death messages. A screenshot is the whole rendered screen. The mod makes no other network requests; Discord itself fetches the boss portraits from the third-party hosts named above.
 - **Frame buffer.** While death videos are on, or clips are ready, the last ~4 seconds of the game screen are held in memory (never written to disk unless a video is being made from them).
 - **Opt-out per player.** Every `Client - Enabled` switch lets a player keep their chat, deaths, kills, screenshots and clips out of Discord and the report.
@@ -473,8 +475,8 @@ A server (a dedicated server, or a world hosted from the game's menu) lets a pla
 Everything is written to `BepInEx/cache/ValheimDiscordRelay.log` (kept for 24 hours), and the important lines also appear in the normal BepInEx log. Common causes when nothing arrives in Discord:
 
 - The webhook URL for that feature is empty. For screenshots, clips and videos it must be set in the **server's** config.
-- The feature's `Server - Enabled` is off, or `Client - Enabled` is off on that client.
-- A player gets "Incompatible version" when joining: their copy of this mod is missing or is not the server's version (see [Version check](#version-check); the server log names the version it found). Install the server's version, or set `[Admin] Server - Require Same Version` to `false`.
+- The feature's `Enable` is off, or `Client - Enabled` is off on that client.
+- A player gets "Incompatible version" when joining: their copy of this mod is missing or is not the server's version (see [Version check](#version-check); the server log names the version it found). Install the server's version, or set `[General] Server - Require Same Version` to `false`.
 - Settings seem missing or wrong after an update: delete the old config file (see [Installation and updating](#installation-and-updating)).
 - **Boss video:** `Client - Video Enabled` is off on the recording client. With `Last Attacker`, that player's `[Player Deaths] Client - Video Enabled` must also be on.
 - **Clips:** nothing happens on the key press: check that `[Clips] Server - Webhook URL` is set on the **server**, that both `Enabled` switches are on, and that the key is not `None`. The log says "Clip hotkey pressed" when the key is recognised.
@@ -488,7 +490,7 @@ Everything is written to `BepInEx/cache/ValheimDiscordRelay.log` (kept for 24 ho
 - **Report window says the server did not answer:** the mod (this version or newer) is not installed on the server, or you are not connected to one.
 - **Black screenshots:** see [Manual screenshots](#manual-screenshots); the log line "Screenshot context: ..." says whether the screen was really black.
 
-Every screenshot, death, boss and report event writes a line to the log (for example `[Report] Death reported ...`), which is the first place to look. Set `[Admin] Server - Log Successful Sends = true` to log every delivery too.
+Every screenshot, death, boss and report event writes a line to the log (for example `[Report] Death reported ...`), which is the first place to look. Set `[General] Server - Log Successful Sends = true` to log every delivery too.
 
 ## Building from source
 

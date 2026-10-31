@@ -1,5 +1,19 @@
 # Changelog
 
+## 2.0.0
+
+**Breaking: client AND server must update together, and the config file is new.**
+
+### Changed
+- **One plugin, one new GUID.** The two plugins (`com.valheimdiscordrelay.client` and `.server`) are now ONE plugin, `com.kydldev.ValheimDiscordRelay`. What runs is decided at run time: the server parts act only when the game is a server (dedicated or hosted), the capture parts only in a game with a screen. A hosted world runs both, as before.
+- **One config file: `BepInEx/config/com.kydldev.ValheimDiscordRelay.cfg`.** Copy your values from the old `ValheimDiscordRelay.cfg` into the new file (sections and key names are the same, except the ones listed below), then delete the old file. The report window's style sheets (`ValheimDiscordRelay.report.uss`, `...report.modern.uss`) and the saved statistics keep their names and keep working.
+- **Needs KydlCore and Jotunn** (also on a dedicated server): the KY hub (F6) and the shared log come from KydlCore.
+- **Every setting is in the KY hub (F6), Settings tab.** Synced `Server - ...` settings can be changed there by an admin and show as locked ("Set by the server") for everybody else; `Client - ...` settings are each player's own. Settings only the server uses (the private webhook URLs, the server notification switches) are handed to admins only, never to ordinary players, so an admin can edit them from the game too.
+- **Config layout follows the KydlDev rule:** `[General] EnableAll` (master switch, on by default; off = the mod does nothing), `[DebugLog] Enable` (off by default) and an `Enable` entry in every feature section.
+  - Renamed: `Server - Enabled` of `[Chat]`, `[Screenshots]`, `[Player Deaths]`, `[Clips]`, `[Boss Death]`, `[Server Notifications]`, `[Player Notifications]` and `[Weekly Report]` is now `Enable`.
+  - Moved: the `[Admin]` settings (`Server - Lock Configuration`, `Server - Require Same Version`, `Server - Log Successful Sends`) are now in `[General]`.
+- **Logging:** the mod no longer keeps its own `ValheimDiscordRelay.log`; everything goes to the BepInEx log through the shared logger. DEBUG lines are written only while `[DebugLog] Enable` is on, and a line repeated within 2.5 seconds is written once.
+
 ## 1.3.5
 
 ### New

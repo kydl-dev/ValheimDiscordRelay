@@ -10,12 +10,12 @@ namespace ValheimDiscordRelay
     // saves it to its own ValheimDiscordRelay.cfg and re-broadcasts it.
     //
     // Only the "Server - ..." settings go through this class. The "Client - ..." settings are plain
-    // SharedConfig.File.Bind entries: each player keeps their own and ServerSync never touches them.
+    // ModSettings.File.Bind entries: each player keeps their own and ServerSync never touches them.
     internal static class SyncedConfig
     {
         // Identifies this mod's sync channel on the wire (RPC name + version check).
         // Never change it after release: old and new builds would stop talking.
-        internal const string SyncName = "com.valheimdiscordrelay";
+        internal const string SyncName = ValheimDiscordRelayPlugin.ModGuid;
 
         internal static readonly ConfigSync Sync = new(SyncName)
         {
@@ -23,7 +23,7 @@ namespace ValheimDiscordRelay
 
             // The version players and server must share (see AdminConfig.RequireSameVersion).
             // MinimumRequiredVersion is intentionally left unset: the check is "exactly this version", not "at least".
-            CurrentVersion = Server.ServerPlugin.PluginVersion,
+            CurrentVersion = ValheimDiscordRelayPlugin.ModVersion,
 
             // Must stay false: with true, a player who HAS this mod could not join any server that does not have it.
             // The server decides instead, with RequireExactVersion (switched on by Server.VersionEnforcement when this
@@ -39,11 +39,11 @@ namespace ValheimDiscordRelay
 
         // Binds a setting in the shared config file AND registers it with ServerSync.
         // Everything bound through here is sent to every connected player, so never use it
-        // for webhook URLs only the server uses - use SharedConfig.File.Bind for those. (Webhook URLs the clients
+        // for webhook URLs only the server uses - use ModSettings.File.Bind for those. (Webhook URLs the clients
         // upload to are bound here on purpose: the admin sets them once on the server and every client receives them.)
         internal static ConfigEntry<T> Bind<T>(string section, string key, T defaultValue, ConfigDescription description)
         {
-            ConfigEntry<T> entry = SharedConfig.File.Bind(section, key, defaultValue, description);
+            ConfigEntry<T> entry = ModSettings.File.Bind(section, key, defaultValue, description);
             Sync.AddConfigEntry(entry);
             return entry;
         }
@@ -57,7 +57,7 @@ namespace ValheimDiscordRelay
         // ServerSync allows exactly one such entry.
         internal static ConfigEntry<bool> BindLock(string section, string key, bool defaultValue, string description)
         {
-            ConfigEntry<bool> entry = SharedConfig.File.Bind(section, key, defaultValue, new ConfigDescription(description));
+            ConfigEntry<bool> entry = ModSettings.File.Bind(section, key, defaultValue, new ConfigDescription(description));
             Sync.AddLockingConfigEntry(entry);
             return entry;
         }

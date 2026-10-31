@@ -49,91 +49,16 @@ namespace ValheimDiscordRelay.Report
         internal static ConfigEntry<float> WindowWidth;
         internal static ConfigEntry<float> WindowHeight;
 
-        private static bool _initialized;
+        /// <summary>The weekly report is on: the mod is on and [Weekly Report] Enable is on.</summary>
+        internal static bool On { get { return ModSettings.On && Enabled != null && Enabled.Value; } }
+
+        /// <summary>This player is counted: <see cref="On"/> and [Weekly Report] Client - Enabled is on.</summary>
+        internal static bool ClientOn { get { return On && ClientEnabled != null && ClientEnabled.Value; } }
+
+        /// <summary>The in-game report window may open: <see cref="On"/> and [Weekly Report] Server - Window Enabled is on.</summary>
+        internal static bool WindowOn { get { return On && WindowEnabled != null && WindowEnabled.Value; } }
         private static string _lastBadTimeWarned;
 
-        /// <summary>
-        /// Binds every [Weekly Report] setting. Safe to call more than once (server and client plugin both call it).
-        /// </summary>
-        internal static void Init()
-        {
-            if (_initialized)
-                return;
-
-            _initialized = true;
-
-            Enabled = SyncedConfig.Bind(
-                Section, "Server - Enabled", true,
-                "Collect weekly statistics (players joined, mob kills, deaths, boss kills, damage) and post them as one embed " +
-                "once a week. Synced from the server: turn off to disable the feature for every player.");
-
-            WebhookUrl = SharedConfig.File.Bind(
-                Section, "Server - Webhook URL", "",
-                "Discord webhook URL for the weekly report. Messages are sent as \"" + WebhookName + "\". Server-side only, never synced.");
-
-            ReportDay = SyncedConfig.Bind(
-                Section, "Server - Report Day", DayOfWeek.Sunday,
-                "Day of the week the report is posted. Synced from the server; only admins can change it while [Admin] Server - Lock Configuration is on.");
-
-            ReportTime = SyncedConfig.Bind(
-                Section, "Server - Report Time", "20:00",
-                "Time of day the report is posted, 24-hour HH:mm, in the SERVER's local time zone. Synced from the server; only admins can change it while [Admin] Server - Lock Configuration is on.");
-
-            SendTestReport = SyncedConfig.Bind(
-                Section, "Server - Send Test Report", false,
-                "Debug helper. Set to true to post the report as it stands right now to the webhook, marked as a test. " +
-                "Once set to true, the report is being sent and this option gets set to false instantly." +
-                "It does not reset the statistics, and the setting turns itself back to false. " +
-                "It fires when the setting changes (an admin in Configuration Manager, or a live config reload on the server) or at the next server start. " +
-                "Synced from the server; only admins can trigger it while [Admin] Server - Lock Configuration is on.");
-
-            WindowEnabled = SyncedConfig.Bind(
-                Section, "Server - Window Enabled", true,
-                "Let players open the in-game weekly report window, which shows the same numbers as the Discord report as they stand " +
-                "right now. Synced from the server: turn off to disable the window for every player. It has no effect on the Discord report " +
-                "or on what is collected. Only admins can change it while [Admin] Server - Lock Configuration is on.");
-
-            ClientEnabled = SharedConfig.File.Bind(
-                Section, "Client - Enabled", true,
-                "Include this player in the weekly report: this game measures the kills and damage you deal and reports your deaths to the server. " +
-                "Turn off to opt out. (The server must also have [Weekly Report] Server - Enabled on.)");
-
-            WindowKey = SharedConfig.File.Bind(
-                Section, "Client - Window Key", new KeyboardShortcut(KeyCode.Home),
-                "Key, or two keys pressed together, that open and close the in-game weekly report window. " +
-                "Examples: Home, or F8 + LeftControl (hold both; the order you press them in does not matter). " +
-                "Set to None to disable the hotkey. Escape also closes the window.");
-
-            WindowScale = SharedConfig.File.Bind(
-                Section, "Client - Window Scale", 0f,
-                new ConfigDescription(
-                    "Size of the in-game weekly report window. 0 = automatic (follows your screen height: normal size at 1080p, " +
-                    "larger on taller screens). Otherwise 0.7 to 2.0, where 1.0 is the normal size.",
-                    new AcceptableValueRange<float>(0f, 2f)));
-
-            WindowStyle = SharedConfig.File.Bind(
-                Section, "Client - Window Style", ReportWindowStyle.Classic,
-                "Look of the in-game weekly report window. Classic = the original flat look. Modern = rounded cards, pill-shaped tabs, " +
-                "a gold primary button, key hints in the footer and Valheim's own fonts. Only the look changes: the same numbers, tabs, " +
-                "keys and window size. It applies the next time the window opens. Each style has its own style sheet in the config folder " +
-                "(ValheimDiscordRelay.report.uss for Classic, ValheimDiscordRelay.report.modern.uss for Modern) that you can edit.");
-
-            WindowWidth = SharedConfig.File.Bind(
-                Section, "Client - Window Width", 0f,
-                new ConfigDescription(
-                    "Width of the in-game weekly report window, remembered between sessions. It is saved automatically when you drag the " +
-                    "window's bottom-right corner, so there is normally no need to edit it. 0 = the default size. The window is never " +
-                    "made narrower than its content needs. The unit is the window's own size before Client - Window Scale is applied.",
-                    new AcceptableValueRange<float>(0f, 4000f)));
-
-            WindowHeight = SharedConfig.File.Bind(
-                Section, "Client - Window Height", 0f,
-                new ConfigDescription(
-                    "Height of the in-game weekly report window, remembered between sessions. It is saved automatically when you drag the " +
-                    "window's bottom-right corner, so there is normally no need to edit it. 0 = the default size. The window is never " +
-                    "made lower than its content needs. The unit is the window's own size before Client - Window Scale is applied.",
-                    new AcceptableValueRange<float>(0f, 4000f)));
-        }
 
         /// <summary>
         /// The configured time of day for the report. Falls back to 20:00 (with one warning) if the text is not HH:mm.

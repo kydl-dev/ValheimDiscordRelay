@@ -215,7 +215,7 @@ namespace ValheimDiscordRelay.Client
             if (QuitRequested || SessionLifecycle.IsTearingDown)
                 yield break;
 
-            ClientPlugin.SendDeathShout(gameText);
+            ValheimDiscordRelayPlugin.SendDeathShout(gameText);
         }
 
         /// <summary>

@@ -285,7 +285,7 @@ namespace ValheimDiscordRelay.Report
             get { return _instance != null && _instance._open; }
         }
 
-        /// <summary>Adds the window to the plugin's GameObject. Called once from ClientPlugin.Awake().</summary>
+        /// <summary>Adds the window to the plugin's GameObject. Called once from the plugin Awake().</summary>
         internal static void Create(GameObject host)
         {
             if (_instance != null || host == null)
@@ -433,13 +433,13 @@ namespace ValheimDiscordRelay.Report
             if (ZNet.instance == null || !CanStayOpen())
                 return;
 
-            if (ReportConfig.Enabled != null && !ReportConfig.Enabled.Value)
+            if (!ReportConfig.On)
             {
                 Notify("The weekly report is turned off on this server.");
                 return;
             }
 
-            if (ReportConfig.WindowEnabled != null && !ReportConfig.WindowEnabled.Value)
+            if (!ReportConfig.WindowOn)
             {
                 Notify("The in-game weekly report is turned off on this server.");
                 return;
@@ -984,7 +984,7 @@ namespace ValheimDiscordRelay.Report
                     return;
 
                 // One write to the file for both values.
-                ConfigFile file = SharedConfig.File;
+                ConfigFile file = ModSettings.File;
                 bool saveOnSet = file.SaveOnConfigSet;
                 file.SaveOnConfigSet = false;
 
@@ -1480,7 +1480,7 @@ namespace ValheimDiscordRelay.Report
         /// <summary>Where the player's style sheet lives: next to the BepInEx config file. Null when that is unknown.</summary>
         private string StylePath()
         {
-            string configFile = SharedConfig.File != null ? SharedConfig.File.ConfigFilePath : null;
+            string configFile = ModSettings.File != null ? ModSettings.File.ConfigFilePath : null;
             string directory = string.IsNullOrEmpty(configFile) ? null : Path.GetDirectoryName(configFile);
 
             return string.IsNullOrEmpty(directory) ? null : Path.Combine(directory, ReportDefaultStyle.FileNameFor(_builtStyle));

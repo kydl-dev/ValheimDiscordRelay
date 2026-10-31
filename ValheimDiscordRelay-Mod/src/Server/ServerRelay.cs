@@ -29,7 +29,7 @@ namespace ValheimDiscordRelay.Server
         private const int ShutdownDrainTimeoutMs = 4000;
 
         /// <summary>
-        /// Called once from ServerPlugin.Awake(), after SharedConfig.InitAll().
+        /// Called once from the plugin Awake(), after ModSettings.Bind().
         /// </summary>
         internal static void Initialize()
         {
@@ -40,10 +40,11 @@ namespace ValheimDiscordRelay.Server
             BossConfig.Enabled.SettingChanged += OnRelaySettingChanged;
             PlayerNotificationConfig.Enabled.SettingChanged += OnRelaySettingChanged;
             ReportConfig.Enabled.SettingChanged += OnRelaySettingChanged;
+            ModSettings.EnableAll.SettingChanged += OnRelaySettingChanged;
         }
 
         /// <summary>
-        /// Called once from ServerPlugin.OnDestroy().
+        /// Called once from the plugin OnDestroy().
         /// </summary>
         internal static void Shutdown()
         {
@@ -57,6 +58,8 @@ namespace ValheimDiscordRelay.Server
                 PlayerNotificationConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
             if (ReportConfig.Enabled != null)
                 ReportConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
+            if (ModSettings.EnableAll != null)
+                ModSettings.EnableAll.SettingChanged -= OnRelaySettingChanged;
 
             // Send what is still queued (bounded) instead of throwing it away: the process is about to end.
             WebhookWorker worker = _worker;
@@ -79,11 +82,11 @@ namespace ValheimDiscordRelay.Server
             if (ZNet.instance == null || !ZNet.instance.IsServer())
                 return;
 
-            if (_worker == null && (ServerConfig.Enabled.Value ||
-                                    ServerConfig.ServerNotificationsEnabled.Value ||
-                                    BossConfig.Enabled.Value ||
-                                    PlayerNotificationConfig.Enabled.Value ||
-                                    ReportConfig.Enabled.Value))
+            if (_worker == null && (ServerConfig.ChatOn ||
+                                    ServerConfig.ServerNotificationsOn ||
+                                    BossConfig.On ||
+                                    PlayerNotificationConfig.On ||
+                                    ReportConfig.On))
             {
                 _worker = new WebhookWorker();
                 _worker.Start();
@@ -136,7 +139,7 @@ namespace ValheimDiscordRelay.Server
 
         private static void OnClientChat(long sender, ZPackage package)
         {
-            if (!ServerConfig.Enabled.Value)
+            if (!ServerConfig.ChatOn)
                 return;
 
             try
@@ -252,7 +255,7 @@ namespace ValheimDiscordRelay.Server
         /// <param name="text">The chat message text.</param>
         internal static void RelayHostChat(Talker.Type type, string text)
         {
-            if (!ServerConfig.Enabled.Value)
+            if (!ServerConfig.ChatOn)
                 return;
 
             try
@@ -328,7 +331,7 @@ namespace ValheimDiscordRelay.Server
         /// <param name="eventName">One of "up", "restart" or "down".</param>
         internal static void NotifyServerLifecycle(string eventName)
         {
-            if (!ServerConfig.ServerNotificationsEnabled.Value || _worker == null || !_serverActive)
+            if (!ServerConfig.ServerNotificationsOn || _worker == null || !_serverActive)
                 return;
 
             string url = ServerConfig.ServerNotificationsWebhookUrl.Value;

@@ -42,7 +42,7 @@ namespace ValheimDiscordRelay.Client
         /// <summary>True when clips are on for this player (admin and player switches both on) and a hotkey is set.</summary>
         internal static bool Active
         {
-            get { return ServerEnabled.Value && ClientEnabled.Value && Key.Value.MainKey != KeyCode.None; }
+            get { return ModSettings.On && ServerEnabled.Value && ClientEnabled.Value && Key.Value.MainKey != KeyCode.None; }
         }
 
         /// <summary>
@@ -54,48 +54,5 @@ namespace ValheimDiscordRelay.Client
             get { return Active && !string.IsNullOrWhiteSpace(WebhookUrl.Value); }
         }
 
-        /// <summary>
-        /// Binds every [Clips] setting. Called once, from SharedConfig.InitAll().
-        /// </summary>
-        internal static void Init()
-        {
-            ServerEnabled = SyncedConfig.Bind(
-                Section, "Server - Enabled", true,
-                "Allow clips to be sent to Discord. Synced from the server: turn off to disable the feature for every player. " +
-                "Only admins can change it while [Admin] Server - Lock Configuration is on.");
-
-            WebhookUrl = SyncedConfig.Bind(
-                Section, "Server - Webhook URL", "",
-                "Discord webhook URL used by clients for clips. Set by the server admin: the server's value is sent to every player, " +
-                "and only admins can change it while [Admin] Server - Lock Configuration is on. Players' games receive this URL, so anyone who joins can read it: use a dedicated webhook/channel and delete the webhook in Discord if it leaks.");
-
-            ClientEnabled = SharedConfig.File.Bind(
-                Section, "Client - Enabled", true,
-                "Allow the clip hotkey in this game. Turn off if you never want to send clips. " +
-                "(The server must also have [Clips] Server - Enabled on.)");
-
-            Key = SharedConfig.File.Bind(
-                Section, "Client - Key", new KeyboardShortcut(KeyCode.PageDown),
-                "Key, or two keys pressed together, that save a clip and send it to Discord. " +
-                "Examples: PageDown, or F9 + LeftControl (hold both; the order you press them in does not matter). " +
-                "Other keys held at the same time are ignored. Set to None to disable the hotkey.");
-
-            IncludePlayerName = SharedConfig.File.Bind(
-                Section, "Client - Include Player Name", true,
-                "Add a line with your character name to the message that carries the clip, so the others can see who saved it. " +
-                "Discord always shows \"" + SenderName + "\" as the sender.");
-
-            PreDuration = SharedConfig.File.Bind(
-                Section, "Client - Pre Duration", 4,
-                new ConfigDescription(
-                    "Seconds of footage before the key press that go into the clip. Allowed range is 2 to 4 (the frame buffer keeps about 4 seconds).",
-                    new AcceptableValueRange<int>(2, 4)));
-
-            PostDuration = SharedConfig.File.Bind(
-                Section, "Client - Post Duration", 4,
-                new ConfigDescription(
-                    "Seconds of footage after the key press that go into the clip. Allowed range is 2 to 4. The clip is sent once this time has passed.",
-                    new AcceptableValueRange<int>(2, 4)));
-        }
     }
 }

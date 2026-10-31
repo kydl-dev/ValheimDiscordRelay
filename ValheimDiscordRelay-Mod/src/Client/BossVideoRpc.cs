@@ -148,10 +148,10 @@ namespace ValheimDiscordRelay.Client
 
         private static bool TryAccept(long owner, string key, string prefab, string hoverName)
         {
-            if (!BossConfig.ClientEnabled.Value || !BossConfig.Enabled.Value)
+            if (!BossConfig.ClientOn || !BossConfig.On)
                 return false;
 
-            ClientCaptureService capture = ClientPlugin.CaptureService;
+            ClientCaptureService capture = ValheimDiscordRelayPlugin.CaptureService;
             if (capture == null)
                 return false;
 

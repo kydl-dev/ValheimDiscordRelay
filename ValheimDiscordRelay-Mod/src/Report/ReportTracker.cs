@@ -540,8 +540,8 @@ namespace ValheimDiscordRelay.Report
 
         private static bool Collecting()
         {
-            return ReportConfig.Enabled != null && ReportConfig.Enabled.Value &&
-                   ReportConfig.ClientEnabled != null && ReportConfig.ClientEnabled.Value;
+            return ReportConfig.On &&
+                   ReportConfig.ClientOn;
         }
 
         private static bool IsServerProcess()

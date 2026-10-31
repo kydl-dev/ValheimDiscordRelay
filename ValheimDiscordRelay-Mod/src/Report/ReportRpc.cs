@@ -126,7 +126,7 @@ namespace ValheimDiscordRelay.Report
         /// </summary>
         private static void OnActivity(long sender, ZPackage package)
         {
-            if (!ReportConfig.Enabled.Value)
+            if (!ReportConfig.On)
                 return;
 
             try
@@ -170,7 +170,7 @@ namespace ValheimDiscordRelay.Report
         /// </summary>
         private static void OnEvent(long sender, ZPackage package)
         {
-            if (!ReportConfig.Enabled.Value)
+            if (!ReportConfig.On)
                 return;
 
             try

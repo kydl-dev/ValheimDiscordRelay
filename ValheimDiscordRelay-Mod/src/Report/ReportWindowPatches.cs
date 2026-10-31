@@ -5,7 +5,7 @@ using UnityEngine;
 namespace ValheimDiscordRelay.Report
 {
     // Harmony patches for the in-game report window. Each one only does something while the window is open, so they cost
-    // nothing the rest of the time. They are applied one by one by ClientPlugin (a failing patch must not stop the others,
+    // nothing the rest of the time. They are applied one by one by the plugin (a failing patch must not stop the others,
     // and must never stop the rest of the mod from loading).
 
     /// <summary>

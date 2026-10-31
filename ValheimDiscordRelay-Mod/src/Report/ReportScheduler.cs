@@ -8,7 +8,7 @@ namespace ValheimDiscordRelay.Report
 {
     /// <summary>
     /// Decides when the weekly report is due, builds it and hands it to the webhook queue.
-    /// Runs on the main thread, from ServerPlugin.Update(), and only does anything on the server.
+    /// Runs on the main thread, from the plugin Update(), and only does anything on the server.
     ///
     /// The report covers the period since the previous one (ReportStats.PeriodStartUtc). It is posted the first time the
     /// clock passes the configured weekday and time after that start; if the server was off at that moment, it is posted as
@@ -69,7 +69,7 @@ namespace ValheimDiscordRelay.Report
         // ---------------------------------------------------------------- lifecycle
 
         /// <summary>
-        /// Called once from ServerPlugin.Awake(), after SharedConfig.InitAll().
+        /// Called once from the plugin Awake(), after ModSettings.Bind().
         /// </summary>
         internal static void Initialize()
         {
@@ -83,7 +83,7 @@ namespace ValheimDiscordRelay.Report
         }
 
         /// <summary>
-        /// Called once from ServerPlugin.OnDestroy().
+        /// Called once from the plugin OnDestroy().
         /// </summary>
         internal static void Shutdown()
         {
@@ -144,7 +144,7 @@ namespace ValheimDiscordRelay.Report
 
                 ReportStats.SaveIfDirty();
 
-                if (!ReportConfig.Enabled.Value)
+                if (!ReportConfig.On)
                 {
                     // Nothing is collected while off, so when it is switched on again the period must start fresh.
                     _wasDisabled = true;

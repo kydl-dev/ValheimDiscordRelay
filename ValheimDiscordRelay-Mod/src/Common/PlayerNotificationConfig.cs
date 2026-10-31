@@ -28,40 +28,10 @@ namespace ValheimDiscordRelay
         internal static ConfigEntry<string> ArrivalAvatarUrl;
         internal static ConfigEntry<string> LeaveAvatarUrl;
 
-        private static bool _initialized;
+        /// <summary>Join/leave messages are on: the mod is on and [Player Notifications] Enable is on.</summary>
+        internal static bool On { get { return ModSettings.On && Enabled != null && Enabled.Value; } }
         private static string _lastBadAvatarWarned;
 
-        /// <summary>
-        /// Binds every [Player Notifications] setting. Safe to call more than once (server and client plugin both call it).
-        /// </summary>
-        internal static void Init()
-        {
-            if (_initialized)
-                return;
-
-            _initialized = true;
-
-            Enabled = SyncedConfig.Bind(
-                Section, "Server - Enabled", true,
-                "ON: Valheim's own arrival message (\"I have arrived!\") is intercepted and NOT sent to Discord. Instead the mod posts " +
-                "\"<name> has joined the world. Population: <n>. Good luck!\" and \"<name> had to leave us. Hope they had fun. Population: <n>.\" " +
-                "to this section's webhook. OFF: the game's arrival message is relayed like any other shout through the normal chat webhook, " +
-                "and no join/leave messages are posted. Synced from the server.");
-
-            WebhookUrl = SharedConfig.File.Bind(
-                Section, "Server - Webhook URL", "",
-                "Discord webhook URL for the join/leave messages. Messages are sent as \"" + WebhookName + "\". Server-side only, never synced.");
-
-            ArrivalAvatarUrl = SyncedConfig.Bind(
-                Section, "Server - Arrival Avatar URL", "",
-                "Image URL (http/https) used as the webhook icon for join messages. Leave empty to use the webhook's default Discord icon. " +
-                "Synced from the server; only admins can change it while Lock Configuration is on.");
-
-            LeaveAvatarUrl = SyncedConfig.Bind(
-                Section, "Server - Leave Avatar URL", "",
-                "Image URL (http/https) used as the webhook icon for leave messages. Leave empty to use the webhook's default Discord icon. " +
-                "Synced from the server; only admins can change it while Lock Configuration is on.");
-        }
 
         /// <summary>
         /// Returns the avatar to send with a join or leave message, or null to let Discord use the webhook's own icon.

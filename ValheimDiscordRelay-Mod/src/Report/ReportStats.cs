@@ -234,7 +234,7 @@ namespace ValheimDiscordRelay.Report
         // ---------------------------------------------------------------- lifecycle
 
         /// <summary>
-        /// Loads the saved week (or starts a new one). Called once from ServerPlugin.Awake().
+        /// Loads the saved week (or starts a new one). Called once from the plugin Awake().
         /// </summary>
         internal static void Initialize()
         {
@@ -905,7 +905,7 @@ namespace ValheimDiscordRelay.Report
 
         private static bool Collecting()
         {
-            return ReportConfig.Enabled != null && ReportConfig.Enabled.Value;
+            return ReportConfig.On;
         }
 
         /// <summary>

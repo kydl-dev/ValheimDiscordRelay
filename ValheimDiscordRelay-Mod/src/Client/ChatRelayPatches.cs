@@ -57,10 +57,10 @@ namespace ValheimDiscordRelay.Client
         {
             try
             {
-                if (ClientPlugin.SuppressChatRelay)
+                if (ValheimDiscordRelayPlugin.SuppressChatRelay)
                     return;
 
-                if (!ClientConfig.ChatEnabled.Value)
+                if (!ClientConfig.ChatOn)
                     return;
 
                 if (!RelayProtocol.IsRelayedType(type))
@@ -71,7 +71,7 @@ namespace ValheimDiscordRelay.Client
 
                 // Valheim's own arrival shout: with Player Notifications on, ignore it (the server announces the join itself).
                 // With it off, fall through and relay it as a normal shout.
-                if (PlayerNotificationConfig.Enabled.Value && ArrivalTextDetector.IsPlayerArrivedShout(type, text))
+                if (PlayerNotificationConfig.On && ArrivalTextDetector.IsPlayerArrivedShout(type, text))
                     return;
 
                 if (ZNet.instance == null)

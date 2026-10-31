@@ -1,0 +1,8 @@
+{
+  "name": "ValheimDiscordRelay",
+  "description": "ValheimDiscordRelay: starts clean with its one config file, is on by default and its Settings tab is in the KY hub (KydlCore D-084: every mod ships a suite)",
+  "requireMods": [ { "guid": "com.kydldev.ValheimDiscordRelay" } ],
+  "configOverrides": [],
+  "resetBetweenTests": true,
+  "tests": [ "startup-clean", "hub-page" ]
+}

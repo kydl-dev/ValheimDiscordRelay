@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 
@@ -16,14 +15,10 @@ namespace ValheimDiscordRelay.Tests.Integration
     {
         const BindingFlags Static = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
 
-        const string NoModSettings = "this mod has its own config layer (SharedConfig / SyncedConfig / *Config.cs) and no ModSettings / Tunable yet - see _agent/PLAN.md";
-
         static List<object> Tunables()
         {
             var list = new List<object>();
-            var settings = ModAssembly.Load().GetType("ValheimDiscordRelay.ModSettings", false);
-            Assume.That(settings, Is.Not.Null, NoModSettings);
-            foreach (var f in settings.GetFields(Static))
+            foreach (var f in ModAssembly.Type("ValheimDiscordRelay.ModSettings").GetFields(Static))
                 if (f.FieldType.IsGenericType && f.FieldType.GetGenericTypeDefinition().Name == "Tunable`1") list.Add(f.GetValue(null));
             return list;
         }
@@ -49,18 +44,49 @@ namespace ValheimDiscordRelay.Tests.Integration
         [Test]
         public void PlayerConfig_HasDebugLogSwitch()
         {
-            var file = Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs");
-            Assume.That(File.Exists(file), NoModSettings);
-            var src = File.ReadAllText(file);
+            var src = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs"));
 
             Assert.That(Regex.IsMatch(src, @"Bind\(\s*""DebugLog""\s*,\s*""Enable""\s*,\s*false"), Is.True, "[DebugLog] Enable (off by default) is required in every mod");
         }
 
         [Test]
+        public void PlayerConfig_HasEnableAll()
+        {
+            var src = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs"));
+
+            Assert.That(Regex.IsMatch(src, @"Bind\(\s*""General""\s*,\s*""EnableAll""\s*,\s*true"), Is.True, "[General] EnableAll (on by default) is the global switch of every mod");
+        }
+
+        [Test]
+        public void PlayerConfig_EverySectionHasEnable()
+        {
+            // PROJECT_RULES 11 (user, 2026-10-30): every functionality has its own [Section] Enable; General holds EnableAll, DebugLog holds its Enable
+            var src = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs"));
+            var sections = new HashSet<string>();
+            var withEnable = new HashSet<string>();
+            foreach (Match m in Regex.Matches(src, @"\.Bind\(\s*""(?<s>[^""]+)""\s*,\s*""(?<k>[^""]+)"""))
+            {
+                sections.Add(m.Groups["s"].Value);
+                if (m.Groups["k"].Value == "Enable") withEnable.Add(m.Groups["s"].Value);
+            }
+            sections.Remove("General");
+
+            foreach (var s in sections)
+                Assert.That(withEnable.Contains(s), Is.True, "config section [" + s + "] has no 'Enable' entry: every functionality gets its own switch (PROJECT_RULES 11); a setting that is not a functionality belongs in [General]");
+        }
+        [Test]
+        public void PlayerConfig_HasNoMenuKey()
+        {
+            var src = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs"));
+
+            Assert.That(Regex.IsMatch(src, @"Bind\(\s*""[^""]*""\s*,\s*""MenuKey"""), Is.False, "no mod has its own menu key: the menu is tabs in the KY hub (F6, KydlCore)");
+            Assert.That(Regex.IsMatch(src, @"ConfigEntry<KeyCode>\s+MenuKey"), Is.False, "no MenuKey entry (KydlCore owns the hub key)");
+        }
+
+        [Test]
         public void ConfigDescriptions_DoNotTalkAboutOldVersions()
         {
-            // every config file of the mod (ModSettings.cs in the template; here Common\*Config.cs, Client\*Config.cs, ...)
-            var src = string.Join("\n", Directory.GetFiles(Path.Combine(TestPaths.ModDir, "src"), "*.cs", SearchOption.AllDirectories).Select(File.ReadAllText));
+            var src = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "ModSettings.cs"));
 
             foreach (Match m in Regex.Matches(src, @"Bind\([^;]*?""(?<d>[^""]{20,})"""))
                 Assert.That(Regex.IsMatch(m.Groups["d"].Value, @"\b(previous|formerly|renamed|old value|used to|before version)\b", RegexOptions.IgnoreCase), Is.False, m.Groups["d"].Value);
