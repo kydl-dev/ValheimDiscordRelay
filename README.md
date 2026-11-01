@@ -492,7 +492,7 @@ Every screenshot, death, boss and report event writes a line to the log (for exa
 
 ## Building from source
 
-- `ValheimDiscordRelay.csproj` (.NET Framework 4.8, C# 10) lists its source files one by one. Game and BepInEx assemblies are expected in `References/`; the embedded video encoder in `Build/EmbeddedWebP/` (`Build/prepare-webp.ps1` downloads the official libwebp tools if it is missing).
+- `ValheimDiscordRelay.csproj` (.NET Framework 4.8, C# 10) lists its source files one by one. Game and BepInEx assemblies are expected in `References/`; the embedded video encoder in `WebP/EmbeddedWebP/` is downloaded by the build itself when it is missing (`WebP/prepare-webp.ps1`, official libwebp, SHA-256 checked; this is why the first build needs internet access; `-p:KydlSkipWebP=true` skips it and builds without clip support).
 - `Build/build-release.bat` prepares the encoder and runs MSBuild in Release mode; the DLL ends up in `bin/Release/`.
 - `Tests/` holds an offline harness for the weekly-report statistics, the snapshot encoder / decoder and the save / load code (see `Tests/README.txt`; it needs Mono and a Roslyn `csc`, and is not part of the mod build). `Tests/SamplePayloads/` has sample Discord report messages you can post to a test webhook to see how Discord draws them.
 - `Legacy/` keeps the old IMGUI version of the report window for reference.

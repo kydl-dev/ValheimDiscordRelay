@@ -1,5 +1,7 @@
 param(
-    [string]$Version = "1.6.0"
+    [string]$Version = "1.6.0",
+    # SHA-256 of libwebp-1.6.0-windows-x64.zip as downloaded from Google (pinned 2026-11-01). Empty = only print it.
+    [string]$ExpectedSha256 = "48886F506B21F62E4661F0F4CBFCA19800897C385128E8902542D29A950C93F1"
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,6 +29,13 @@ if (-not (Test-Path $required)) {
     }
 
     Invoke-WebRequest -Uri $url -OutFile $zip
+
+    $actual = (Get-FileHash -Path $zip -Algorithm SHA256).Hash
+    Write-Host "SHA-256 of the download: $actual"
+    if ($ExpectedSha256 -and ($actual -ne $ExpectedSha256)) {
+        Remove-Item $zip -Force
+        throw "SHA-256 of the libwebp archive does not match (expected $ExpectedSha256, got $actual): the download was refused."
+    }
 
     $extract = Join-Path $temp "extract"
     if (Test-Path $extract) {

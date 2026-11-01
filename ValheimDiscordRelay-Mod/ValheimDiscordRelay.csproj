@@ -22,13 +22,24 @@
     <Reference Include="UnityEngine.ScreenCaptureModule"><HintPath>$(ValheimRefs)\UnityEngine.ScreenCaptureModule.dll</HintPath><Private>false</Private></Reference>
   </ItemGroup>
 
-  <ItemGroup>
-    <!-- img2webp.exe + its DLLs, embedded and unpacked at run time by Client\WebPTool.cs. They are git-ignored (no *.dll / *.exe in git):
-         WebP\prepare-webp.ps1 downloads the official libwebp build into WebP\EmbeddedWebP. Without them the mod still builds, but cannot encode clips. -->
-    <EmbeddedResource Include="WebP\EmbeddedWebP\*.*" Condition="Exists('WebP\EmbeddedWebP')">
-      <LogicalName>ValheimDiscordRelay.EmbeddedWebP.%(Filename)%(Extension)</LogicalName>
-    </EmbeddedResource>
-  </ItemGroup>
-
+  <!--
+    img2webp.exe + its DLLs (libwebp), embedded and unpacked at run time by Client\WebP*.cs. They are git-ignored (no *.dll / *.exe in git), so the BUILD fetches them
+    when they are missing: WebP\prepare-webp.ps1 downloads the official libwebp zip (checks its SHA-256) into WebP\EmbeddedWebP. This is the only network access of a build,
+    and only on the first build (or after the folder was deleted). A failed download FAILS the build: a DLL without the tools would silently have no clip support.
+    Skip it with  -p:KydlSkipWebP=true  (the mod then builds without clip support, e.g. on a machine without internet).
+    The embedded items are added inside the target, after the download, so the very first build already contains the files.
+  -->
+  <Target Name="PrepareWebP" BeforeTargets="AssignTargetPaths">
+    <PropertyGroup>
+      <WebPFolder>$(MSBuildProjectDirectory)\WebP\EmbeddedWebP</WebPFolder>
+    </PropertyGroup>
+    <Message Condition="'$(KydlSkipWebP)' != 'true' And !Exists('$(WebPFolder)\img2webp.exe')" Importance="high" Text="ValheimDiscordRelay: img2webp.exe is missing - downloading the official libwebp (needs internet; -p:KydlSkipWebP=true skips this)." />
+    <Exec Condition="'$(KydlSkipWebP)' != 'true' And !Exists('$(WebPFolder)\img2webp.exe')" Command="powershell -NoProfile -ExecutionPolicy Bypass -File &quot;$(MSBuildProjectDirectory)\WebP\prepare-webp.ps1&quot;" IgnoreExitCode="true" />
+    <Error Condition="'$(KydlSkipWebP)' != 'true' And !Exists('$(WebPFolder)\img2webp.exe')" Text="ValheimDiscordRelay: WebP\EmbeddedWebP\img2webp.exe is missing and could not be downloaded. Check the internet connection and run WebP\prepare-webp.ps1 by hand, or build with -p:KydlSkipWebP=true (no clip support)." />
+    <ItemGroup Condition="Exists('$(WebPFolder)')">
+      <WebPTool Include="$(WebPFolder)\*.*" />
+      <EmbeddedResource Include="@(WebPTool)" LogicalName="ValheimDiscordRelay.EmbeddedWebP.%(WebPTool.Filename)%(WebPTool.Extension)" />
+    </ItemGroup>
+  </Target>
   <Import Project="..\..\Claude\shared\Kydl.Mod.targets" />
 </Project>

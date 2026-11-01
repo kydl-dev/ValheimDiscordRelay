@@ -85,3 +85,5 @@ CLAUDE.md
 
 # test-quality output (coverage, Stryker): rebuilt by _agent/tools/test-quality.ps1
 /*-Tests/_quality/
+# temporary download of WebP\prepare-webp.ps1
+ValheimDiscordRelay-Mod/WebP/webp-download/
