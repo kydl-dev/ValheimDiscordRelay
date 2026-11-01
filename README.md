@@ -84,7 +84,7 @@ Every feature that sends something to Discord has its own config category, its o
 | Normal chat | `[Chat]` | server | `Server - Normal Webhook URL` (falls back to `Server - Webhook URL`) | the player's name |
 | Shouts | `[Chat]` | server | `Server - Shout Webhook URL` (falls back to `Server - Webhook URL`) | the player's name |
 | Manual screenshots | `[Screenshots]` | player's game | `Server - Webhook URL` | the player's name (optional) |
-| Clips | `[Clips]` | player's game | `Server - Webhook URL` | `ValheimDiscordRelay Clips` |
+| Clips | `[Clips]` | player's game | `Server - Webhook URL` | `ValheimRelay Clips` |
 | Death message + video | `[Player Deaths]` | player's game | `Server - Webhook URL` | the player's name |
 | Boss announcement | `[Boss Death]` | server (embed) + a player's game (video) | `Server - Webhook URL` | `Server - Webhook Username` |
 | Server up / down / restart | `[Server Notifications]` | server | `Server - Webhook URL` | `Server notifications` (or the webhook's own name) |
@@ -157,7 +157,7 @@ The mod uses ServerSync. Players do not enter webhooks; the admin sets them in t
 | `Server - Webhook URL` | empty | Synced. The clips webhook. |
 | `Client - Enabled` | `true` | Allow the clip key in this game. |
 | `Client - Key` | `PageDown` | `None` disables it. For two keys together write both, e.g. `F9 + LeftControl`: hold both, in any order; other keys held at the same time are ignored. |
-| `Client - Include Player Name` | `true` | Add the line `<name> saved a clip.` to the message that carries the clip. The Discord sender is always `ValheimDiscordRelay Clips`. |
+| `Client - Include Player Name` | `true` | Add the line `<name> saved a clip.` to the message that carries the clip. The Discord sender is always `ValheimRelay Clips`. |
 | `Client - Pre Duration`, `Client - Post Duration` | `4`, `4` | Seconds before / after the key press (2–4 each). |
 
 Clips use the frame rate and resolution of `[Player Deaths] Client - Video FPS` and `Client - Video Resolution`.
@@ -246,14 +246,14 @@ Press `PageUp` (default) to capture the final rendered frame, including UI added
 
 ### Clips
 
-Press the clip key (`PageDown` by default) to save a moment: the 4 seconds before the key press and the 4 seconds after it (adjustable, 2–4 s each). Once the "after" part has been recorded the video is encoded as an animated WebP and uploaded straight from your game as **ValheimDiscordRelay Clips**, with the line `<your name> saved a clip.` A short notice at the top left of the screen says when it was sent (or that it failed). The notice appears only when the clip is finished, so it is never part of the video.
+Press the clip key (`PageDown` by default) to save a moment: the 4 seconds before the key press and the 4 seconds after it (adjustable, 2–4 s each). Once the "after" part has been recorded the video is encoded as an animated WebP and uploaded straight from your game as **ValheimRelay Clips**, with the line `<your name> saved a clip.` A short notice at the top left of the screen says when it was sent (or that it failed). The notice appears only when the clip is finished, so it is never part of the video.
 
 **Where the footage comes from.** A clip does not record anything itself: it is cut from the in-memory frame buffer the death video uses, which holds only the last 4 seconds (4.1 s with a small margin). That is why *Pre Duration* cannot be more than 4 seconds. The buffer runs while death videos are on, and also while clips are ready (`[Clips]` enabled on both sides, a key set and a webhook configured), so **clips work with death videos switched off**. While nothing is configured, nothing is captured.
 
 - One clip at a time: a key press while the previous clip is still being recorded or sent is ignored (and logged).
 - A death or boss video at the same moment is not affected; they share the same frames.
 - If a game runs slower than the video frame rate, fewer frames are captured and the clip plays back faster than real time (the same applies to death and boss videos). Use `20` FPS in `[Player Deaths]` if that happens.
-- If Discord refuses the sender name with HTTP 400, the clip is sent again once as `ValheimRelay Clips` and that name is used from then on. The log says when this happens.
+- If Discord refuses the sender name with HTTP 400, the clip is sent again once as `Valheim Clips` and that name is used from then on. The log says when this happens.
 - Quitting the game cancels a clip in progress.
 
 ### Death messages

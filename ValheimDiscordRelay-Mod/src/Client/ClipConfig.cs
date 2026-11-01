@@ -20,13 +20,13 @@ namespace ValheimDiscordRelay.Client
         internal const string Section = "Clips";
 
         /// <summary>The name Discord shows as the sender of every clip.</summary>
-        internal const string SenderName = "ValheimDiscordRelay Clips";
+        internal const string SenderName = "ValheimRelay Clips";
 
         /// <summary>
         /// Used only if Discord refuses <see cref="SenderName"/> (HTTP 400). Same name without the word "Discord".
         /// Once a clip has been accepted under this name it is used from then on, so the upload is not repeated every time.
         /// </summary>
-        internal const string FallbackSenderName = "ValheimRelay Clips";
+        internal const string FallbackSenderName = "Valheim Clips";
 
         // Server - * (synced)
         internal static ConfigEntry<bool> ServerEnabled;

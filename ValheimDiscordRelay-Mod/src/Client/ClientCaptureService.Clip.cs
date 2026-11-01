@@ -11,7 +11,7 @@ namespace ValheimDiscordRelay.Client
 {
     /// <summary>
     /// Manual clips: press the hotkey and the last few seconds plus the next few seconds are sent to Discord as an
-    /// animated WebP, under the sender name "ValheimDiscordRelay Clips".
+    /// animated WebP, under the sender name "ValheimRelay Clips".
     ///
     /// Like the boss video, a clip does NOT capture anything itself. The rolling frame buffer (see
     /// ClientCaptureService.RollingBuffer.cs) already holds the last ~4 seconds, so on the key press the clip only
@@ -333,7 +333,7 @@ namespace ValheimDiscordRelay.Client
         }
 
         /// <summary>
-        /// Uploads the clip as "ValheimDiscordRelay Clips". If Discord answers HTTP 400 (for example because it does not
+        /// Uploads the clip as "ValheimRelay Clips". If Discord answers HTTP 400 (for example because it does not
         /// accept that sender name), the same upload is repeated once under <see cref="ClipConfig.FallbackSenderName"/>,
         /// and that name is then used for every later clip.
         /// </summary>

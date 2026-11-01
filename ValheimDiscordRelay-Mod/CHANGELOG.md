@@ -29,6 +29,7 @@
 - **A chat line is no longer lost when Discord refuses the player's name.** Discord answers HTTP 400 for a sender name that contains "discord" or "clyde". The line is now sent once more under the name "Valheim Player", with the real name in bold at the start of the text.
 - **A very long player name that ends in an emoji** is cut without breaking the emoji in half (a broken emoji made Discord refuse the message).
 - **A restart of the webhook sender in the same game process** (a new server session) sends messages again; before, it could stay in "shutting down" mode.
+- **Clips are posted as "ValheimRelay Clips"** (was "ValheimDiscordRelay Clips"): Discord refuses sender names that contain "discord", so every game start first wasted an upload on the refused name. If Discord should refuse the new name too, the second try uses "Valheim Clips".
 - **A failure while the boss death video frames are prepared** is logged and no longer ends the game process.
 
 ## 1.3.5
