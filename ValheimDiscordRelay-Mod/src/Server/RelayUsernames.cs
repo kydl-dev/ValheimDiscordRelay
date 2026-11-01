@@ -80,7 +80,7 @@ namespace ValheimDiscordRelay.Server
         {
             if (value.Length <= 80)
                 return value;
-            return value.Substring(0, 79) + "…";
+            return TextLimit.WithEllipsis(value, 80);
         }
     }
 }

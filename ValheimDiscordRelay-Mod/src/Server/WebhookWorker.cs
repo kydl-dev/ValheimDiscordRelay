@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
@@ -35,6 +35,9 @@ namespace ValheimDiscordRelay.Server
             /// evicted and do not count towards [Chat] Server - Queue Limit.
             /// </summary>
             public bool ExemptFromLimit;
+
+            /// <summary>True once the chat line was resent under the neutral sender name (Discord refused the player name).</summary>
+            public bool NameFallbackUsed;
         }
 
         // Oldest first. A list rather than a Queue because a full queue evicts the oldest item that is NOT exempt, which can
@@ -55,6 +58,7 @@ namespace ValheimDiscordRelay.Server
         public void Start()
         {
             _stopping = false;
+            _draining = false; // a restart in the same process (a new server session) must accept and send messages again
             _thread = new Thread(Run)
             {
                 IsBackground = true,
@@ -420,6 +424,18 @@ namespace ValheimDiscordRelay.Server
                     return new SendOutcome();
                 }
 
+                // HTTP 400 on a chat line: Discord refuses sender names that contain "discord" or "clyde". Resend once under a
+                // neutral name with the player name in the text, instead of losing the message.
+                string fallbackName, fallbackContent;
+                if (status == 400 && item.PayloadJson == null && !item.NameFallbackUsed &&
+                    DiscordNameFallback.TryBuild(item.Username, item.Content, out fallbackName, out fallbackContent))
+                {
+                    RelayDiagnostics.Warning("Discord refused the sender name '" + item.Username + "' (HTTP 400); resending the message once under '" + fallbackName + "'.");
+                    item.NameFallbackUsed = true;
+                    item.Username = fallbackName;
+                    item.Content = fallbackContent;
+                    return new SendOutcome { RetryDelayMs = 0 };
+                }
                 // No HTTP answer at all (timeout, DNS failure, refused or dropped connection): a network blip, not a
                 // rejection by Discord, so it is retried with the normal backoff instead of dropping the message.
                 if (response == null && ex.Status != WebExceptionStatus.RequestCanceled)

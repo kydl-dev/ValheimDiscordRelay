@@ -9,6 +9,8 @@
     <RootNamespace>ValheimDiscordRelay.Tests.Unit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\..\ValheimDiscordRelay-Mod\src\Common\TextLimit.cs" Link="Mod\TextLimit.cs" />
+    <Compile Include="..\..\ValheimDiscordRelay-Mod\src\Server\DiscordNameFallback.cs" Link="Mod\DiscordNameFallback.cs" />
     <!-- shared 3D viewer (from WhipItUp, user 2026-10-27): its pure math is tested here -->
     <Compile Include="..\..\ValheimDiscordRelay-Unity\Assets\ValheimDiscordRelay_UI\Runtime\ViewerSettings.cs" Link="Ui\ViewerSettings.cs" />
     <Compile Include="..\..\ValheimDiscordRelay-Unity\Assets\ValheimDiscordRelay_UI\Runtime\ViewerMath.cs" Link="Ui\ViewerMath.cs" />

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Text;
 
@@ -59,8 +59,7 @@ namespace ValheimDiscordRelay.Client
             s = s.Replace("@everyone", "@\u200beveryone")
                  .Replace("@here", "@\u200bhere")
                  .Trim();
-            if (s.Length > 80)
-                s = s.Substring(0, 79) + "…";
+            s = TextLimit.WithEllipsis(s, 80);
             return s;
         }
 

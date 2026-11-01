@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
@@ -391,9 +391,19 @@ namespace ValheimDiscordRelay.Client
 
             ThreadPool.QueueUserWorkItem(delegate
             {
-                List<string> staged = StageDeathFrames(selected, "boss-");
-                DebugLog("Boss frame staging complete. Staged " + staged.Count + " of " + selected.Count + " frames.");
-                ProcessBossVideo(bossName, webhookUrl, username, avatarUrl, fps, staged, announceKey, remoteOwner);
+                // An exception that escapes a pool thread ends the whole game process: catch everything here.
+                try
+                {
+                    List<string> staged = StageDeathFrames(selected, "boss-");
+                    DebugLog("Boss frame staging complete. Staged " + staged.Count + " of " + selected.Count + " frames.");
+                    ProcessBossVideo(bossName, webhookUrl, username, avatarUrl, fps, staged, announceKey, remoteOwner);
+                }
+                catch (Exception ex)
+                {
+                    RelayDiagnostics.Error("Boss video processing failed.", ex);
+                    ReleaseBossAnnouncement(announceKey, remoteOwner);
+                    _bossProcessing = false;
+                }
             });
         }
 
