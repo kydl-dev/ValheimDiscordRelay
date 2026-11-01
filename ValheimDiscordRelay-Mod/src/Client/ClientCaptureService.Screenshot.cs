@@ -111,9 +111,10 @@ namespace ValheimDiscordRelay.Client
 
             try
             {
-                if (string.IsNullOrWhiteSpace(ClientConfig.ScreenshotWebhookUrl.Value))
+                string webhookUrl = ClientConfig.ScreenshotWebhookFor(_screenshotMode);
+                if (webhookUrl.Length == 0)
                 {
-                    RelayDiagnostics.Warning("Screenshot requested, but [Screenshots] Server - Webhook URL is empty.");
+                    RelayDiagnostics.Warning("Screenshot (" + _screenshotMode + ") requested, but no webhook is set for it and [Screenshots] Server - Webhook URL is empty.");
                     yield break;
                 }
 
@@ -121,7 +122,6 @@ namespace ValheimDiscordRelay.Client
                     ? ClientTextUtils.GetLocalPlayerName()
                     : "Valheim Player";
 
-                string webhookUrl = ClientConfig.ScreenshotWebhookUrl.Value.Trim();
 
                 ScreenshotStrategy[] order = BuildScreenshotStrategyOrder();
 

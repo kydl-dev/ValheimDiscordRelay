@@ -109,10 +109,22 @@ namespace ValheimDiscordRelay
                 "Allow manual screenshots to be sent to Discord. Synced from the server: turn off to disable the feature for every player. " +
                 "Only admins can change it while [General] Server - Lock Configuration is on.");
             Client.ClientConfig.ScreenshotWebhookUrl = SyncedConfig.Bind("Screenshots", "Server - Webhook URL", "",
-                "Discord webhook URL used by clients for manual screenshots. Set by the server admin: the server's value is sent to every " +
+                "GLOBAL screenshot webhook: the normal screenshots go here, and so do the screenshots without HUD (and without HUD and player) whose own webhook below is empty. Discord webhook URL used by clients for manual screenshots. Set by the server admin: the server's value is sent to every " +
                 "player, and only admins can change it while [General] Server - Lock Configuration is on. Players' games receive this URL, so anyone who joins can read it: use a dedicated webhook/channel and delete the webhook in Discord if it leaks.");
+            Client.ClientConfig.ScreenshotHudHiddenWebhookUrl = SyncedConfig.Bind("Screenshots", "Server - HUD Hidden Webhook URL", "",
+                "Discord webhook URL for the screenshots WITHOUT HUD. Empty = they go to [Screenshots] Server - Webhook URL. Synced like the global one: players' games receive it, so anyone who joins can read it. " +
+                "Only admins can change it while [General] Server - Lock Configuration is on.");
+            Client.ClientConfig.ScreenshotHudPlayerHiddenWebhookUrl = SyncedConfig.Bind("Screenshots", "Server - HUD And Player Hidden Webhook URL", "",
+                "Discord webhook URL for the screenshots WITHOUT HUD and WITHOUT the player's character. Empty = they go to [Screenshots] Server - Webhook URL. Synced like the global one: players' games receive it, so anyone who joins can read it. " +
+                "Only admins can change it while [General] Server - Lock Configuration is on.");
+            Client.ClientConfig.ScreenshotNormalEnabled = c.Bind("Screenshots", "Client - Normal Enabled", true,
+                "Allow the normal screenshot (HUD on) in this game. Off = its key does nothing and its button in the F6 hub is hidden. [Screenshots] Client - Enabled switches all three kinds.");
+            Client.ClientConfig.ScreenshotHudHiddenEnabled = c.Bind("Screenshots", "Client - HUD Hidden Enabled", true,
+                "Allow the screenshot without HUD in this game. Off = its key does nothing and its button in the F6 hub is hidden.");
+            Client.ClientConfig.ScreenshotHudPlayerHiddenEnabled = c.Bind("Screenshots", "Client - HUD And Player Hidden Enabled", true,
+                "Allow the screenshot without HUD and without your character in this game. Off = its key does nothing and its button in the F6 hub is hidden.");
             Client.ClientConfig.ScreenshotEnabled = c.Bind("Screenshots", "Client - Enabled", true,
-                "Allow the screenshot hotkey in this game. Turn off if you never want to send screenshots. " +
+                "Allow screenshots in this game: off = none of the three kinds works. Turn off if you never want to send screenshots. " +
                 "(The server must also have [Screenshots] Enable on.)");
             Client.ClientConfig.ScreenshotKey = c.Bind("Screenshots", "Client - Key", new KeyboardShortcut(KeyCode.PageUp),
                 "Key that captures the current rendered Valheim screen and sends it to Discord. Set to None to disable the hotkey.");

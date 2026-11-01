@@ -57,6 +57,9 @@ namespace ValheimDiscordRelay.Client
             else
                 return;
 
+            if (!ClientConfig.ScreenshotKindActive(mode))
+                return;
+
             if (mode != ScreenshotMode.Normal && ClientTextUtils.IsTypingInGame())
                 return;
 
@@ -119,15 +122,23 @@ namespace ValheimDiscordRelay.Client
         /// </summary>
         /// <param name="mode">What the screenshot shows.</param>
         /// <param name="delaySeconds">How long to wait first, e.g. for the F6 window to disappear.</param>
-        internal void RequestScreenshot(ScreenshotMode mode, float delaySeconds)
+        /// <returns>False when nothing was started (this kind is off or has no webhook, or another screenshot is running).</returns>
+        internal bool RequestScreenshot(ScreenshotMode mode, float delaySeconds)
         {
+            if (!ClientConfig.ScreenshotKindActive(mode))
+            {
+                RelayDiagnostics.Debug("[Screenshot] The " + mode + " screenshot is off or has no webhook; the request is ignored.");
+                return false;
+            }
+
             if (_screenshotInProgress)
             {
                 RelayDiagnostics.Debug("[Screenshot] A screenshot is already running; the " + mode + " request is ignored.");
-                return;
+                return false;
             }
 
             _host.StartCoroutine(CaptureRequestedScreenshot(mode, delaySeconds));
+            return true;
         }
 
         private IEnumerator CaptureRequestedScreenshot(ScreenshotMode mode, float delaySeconds)

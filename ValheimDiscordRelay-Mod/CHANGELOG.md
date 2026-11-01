@@ -1,6 +1,8 @@
 # Changelog
 
-## 2.1.0
+## 2.0.0
+
+**Breaking: client AND server must update together, and the config file is new.**
 
 ### New
 - **Two more kinds of screenshot.** Besides the normal screenshot (`PageUp`, HUD on, unchanged):
@@ -9,13 +11,9 @@
   - The uploaded file names end in `-nohud` and `-nohud-noplayer`. `P` and `Alt` + `P` are not bound by Valheim itself. Both can be changed or switched off in `[Screenshots]` (`Client - HUD Hidden Key`, `Client - HUD And Player Hidden Key`).
   - The two new keys do nothing while you type in the chat, the console or a text box. The normal screenshot key works at any time, also while the chat is open.
   - The death-video frame fallback is never used for the two new kinds, because those frames still show the HUD.
-- **A "Screenshots" tab in the KY hub (F6)** with one button per kind. A button closes the window and takes that screenshot, the same as pressing its key. The tab also shows whether screenshots are on and whether the server has a webhook. The Settings tab stays as it was.
-
-### Changed
-- Code only: every class is now at most 500 lines (split into partial classes by responsibility; no behaviour change).
-## 2.0.0
-
-**Breaking: client AND server must update together, and the config file is new.**
+  - **Three webhooks.** `[Screenshots] Server - Webhook URL` is the global one (normal screenshots). `Server - HUD Hidden Webhook URL` and `Server - HUD And Player Hidden Webhook URL` are optional: when one is empty, that kind goes to the global webhook. All three are synced like the global one (players' games upload to them, so they are not secret).
+  - **The player can switch each kind off.** `[Screenshots] Client - Enabled` still switches all screenshots; `Client - Normal Enabled`, `Client - HUD Hidden Enabled` and `Client - HUD And Player Hidden Enabled` switch one kind each. A kind that is off (or has no webhook) does nothing when its key is pressed and has no button in the F6 hub.
+- **A "Screenshots" tab in the KY hub (F6)** with one button per kind. A button closes the window and takes that screenshot, the same as pressing its key. A kind that is switched off, or has no webhook, has no button. The Settings tab stays as it was.
 
 ### Changed
 - **One plugin, one new GUID.** The two plugins (`com.valheimdiscordrelay.client` and `.server`) are now ONE plugin, `com.kydldev.ValheimDiscordRelay`. What runs is decided at run time: the server parts act only when the game is a server (dedicated or hosted), the capture parts only in a game with a screen. A hosted world runs both, as before.

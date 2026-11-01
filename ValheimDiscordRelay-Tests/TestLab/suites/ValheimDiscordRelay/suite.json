@@ -1,10 +1,11 @@
-﻿{
+{
   "name": "ValheimDiscordRelay",
   "description": "ValheimDiscordRelay: starts clean with its one config file, is on by default, its Settings and Screenshots tabs are in the KY hub and the three screenshot kinds work (KydlCore D-084: every mod ships a suite)",
   "requireMods": [ { "guid": "com.kydldev.ValheimDiscordRelay" } ],
   "configOverrides": [
-    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - Webhook URL", "value": "http://127.0.0.1:18771/screenshot" }
+    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - Webhook URL", "value": "http://127.0.0.1:18771/screenshot" },
+    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - HUD And Player Hidden Webhook URL", "value": "http://127.0.0.1:18771/noplayer" }
   ],
   "resetBetweenTests": true,
-  "tests": [ "startup-clean", "hub-page", "screenshot-modes", "hub-screenshot-button" ]
+  "tests": [ "startup-clean", "hub-page", "screenshot-modes", "hub-screenshot-button", "screenshot-kinds" ]
 }

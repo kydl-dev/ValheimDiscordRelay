@@ -29,34 +29,51 @@ namespace ValheimDiscordRelay.Client
 
         private static KyPage Build(ClientCaptureService service)
         {
-            bool active = ClientConfig.ScreenshotsActive;
-            bool hasWebhook = !string.IsNullOrWhiteSpace(ClientConfig.ScreenshotWebhookUrl.Value);
+            bool normal = ClientConfig.ScreenshotKindActive(ScreenshotMode.Normal);
+            bool hud = ClientConfig.ScreenshotKindActive(ScreenshotMode.HudHidden);
+            bool both = ClientConfig.ScreenshotKindActive(ScreenshotMode.HudAndPlayerHidden);
             string normalKey = KeyText(ClientConfig.ScreenshotKey.Value);
             string hudKey = KeyText(ClientConfig.ScreenshotHudHiddenKey.Value);
             string bothKey = KeyText(ClientConfig.ScreenshotHudPlayerHiddenKey.Value);
 
-            KyPage page = new KyPage { State = active + "|" + hasWebhook + "|" + normalKey + "|" + hudKey + "|" + bothKey };
+            KyPage page = new KyPage { State = normal + "|" + hud + "|" + both + "|" + normalKey + "|" + hudKey + "|" + bothKey };
+            KySection section = page.Section("Take a screenshot now");
 
-            KySection status = page.Section("Screenshots");
-            status.Value("Screenshots", active ? "On" : "Off");
-            status.Value("Discord webhook", hasWebhook ? "Set" : "Not set");
-
-            if (!active || !hasWebhook)
+            if (!normal && !hud && !both)
             {
-                status.Note(!active
-                    ? "Screenshots are switched off: the server's [Screenshots] Enable or your own [Screenshots] Client - Enabled is off."
-                    : "The server has no [Screenshots] Server - Webhook URL, so there is nowhere to send a screenshot.");
+                section.Note("No screenshot kind is available: screenshots are switched off (the server's [Screenshots] Enable, or your own [Screenshots] Client - Enabled and the three Client - ... Enabled switches), or no webhook is set.");
                 return page;
             }
 
-            KySection buttons = page.Section("Take a screenshot now");
-            buttons.Note("Each button closes this window and sends the screenshot to Discord, the same as pressing its key.");
-            buttons.Button("Screenshot with HUD (" + normalKey + ")", () => Press(service, ScreenshotMode.Normal));
-            buttons.Button("Screenshot without HUD (" + hudKey + ")", () => Press(service, ScreenshotMode.HudHidden));
-            buttons.Button("Screenshot without HUD and without your character (" + bothKey + ")", () => Press(service, ScreenshotMode.HudAndPlayerHidden));
+            section.Note("Each button closes this window and sends the screenshot to Discord, the same as pressing its key. A kind you switched off, or that has no webhook, has no button.");
+
+            if (normal)
+                section.Button("Screenshot with HUD (" + normalKey + ")", () => Press(service, ScreenshotMode.Normal));
+
+            if (hud)
+                section.Button("Screenshot without HUD (" + hudKey + ")", () => Press(service, ScreenshotMode.HudHidden));
+
+            if (both)
+                section.Button("Screenshot without HUD and without your character (" + bothKey + ")", () => Press(service, ScreenshotMode.HudAndPlayerHidden));
+
             return page;
         }
 
+        /// <summary>How many buttons the page shows right now (read by the TestLab hooks).</summary>
+        internal static int VisibleButtonCount(ClientCaptureService service)
+        {
+            int count = 0;
+            foreach (KySection section in Build(service).Sections)
+            {
+                foreach (KyRow row in section.Rows)
+                {
+                    if (row is KyButtonRow)
+                        count++;
+                }
+            }
+
+            return count;
+        }
         /// <summary>What a button does: closes the hub, then takes the screenshot after a short delay. Also called by the TestLab hook.</summary>
         internal static void Press(ClientCaptureService service, ScreenshotMode mode)
         {

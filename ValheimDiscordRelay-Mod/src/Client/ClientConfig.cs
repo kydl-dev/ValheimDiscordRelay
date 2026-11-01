@@ -34,6 +34,16 @@ namespace ValheimDiscordRelay.Client
         internal static ConfigEntry<KeyboardShortcut> ScreenshotHudPlayerHiddenKey;
         internal static ConfigEntry<bool> IncludeScreenshotPlayerName;
 
+        /// <summary>Webhook of the screenshots without HUD; empty = the global screenshot webhook is used.</summary>
+        internal static ConfigEntry<string> ScreenshotHudHiddenWebhookUrl;
+
+        /// <summary>Webhook of the screenshots without HUD and player; empty = the global screenshot webhook is used.</summary>
+        internal static ConfigEntry<string> ScreenshotHudPlayerHiddenWebhookUrl;
+
+        internal static ConfigEntry<bool> ScreenshotNormalEnabled;
+        internal static ConfigEntry<bool> ScreenshotHudHiddenEnabled;
+        internal static ConfigEntry<bool> ScreenshotHudPlayerHiddenEnabled;
+
         // [Player Deaths]
         internal static ConfigEntry<bool> DeathServerEnabled;
         internal static ConfigEntry<string> DeathVideoWebhookUrl;
@@ -51,6 +61,38 @@ namespace ValheimDiscordRelay.Client
         internal static bool ScreenshotsActive
         {
             get { return ModSettings.On && ScreenshotServerEnabled.Value && ScreenshotEnabled.Value; }
+        }
+
+        /// <summary>
+        /// The webhook a screenshot of this kind goes to (trimmed; empty when none is set): the kind's own webhook, else the global
+        /// screenshot webhook (the normal kind always uses the global one).
+        /// </summary>
+        internal static string ScreenshotWebhookFor(ScreenshotMode mode)
+        {
+            ConfigEntry<string> own = mode == ScreenshotMode.HudHidden ? ScreenshotHudHiddenWebhookUrl
+                : mode == ScreenshotMode.HudAndPlayerHidden ? ScreenshotHudPlayerHiddenWebhookUrl
+                : null;
+
+            if (own != null && !string.IsNullOrWhiteSpace(own.Value))
+                return own.Value.Trim();
+
+            return (ScreenshotWebhookUrl.Value ?? string.Empty).Trim();
+        }
+
+        /// <summary>
+        /// True when this kind of screenshot can be taken: screenshots are on (server and player), this kind is not switched off by
+        /// the player and a webhook exists for it. The F6 button of a kind that is not active is not shown.
+        /// </summary>
+        internal static bool ScreenshotKindActive(ScreenshotMode mode)
+        {
+            if (!ScreenshotsActive)
+                return false;
+
+            ConfigEntry<bool> kind = mode == ScreenshotMode.HudHidden ? ScreenshotHudHiddenEnabled
+                : mode == ScreenshotMode.HudAndPlayerHidden ? ScreenshotHudPlayerHiddenEnabled
+                : ScreenshotNormalEnabled;
+
+            return kind.Value && ScreenshotWebhookFor(mode).Length > 0;
         }
 
         /// <summary>True when the in-game death shout and the Discord death message are on for this player.</summary>

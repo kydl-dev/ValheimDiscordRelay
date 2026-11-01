@@ -28,8 +28,7 @@ namespace ValheimDiscordRelay.Testing
         static int Screenshot(int mode)
         {
             if (ValheimDiscordRelayPlugin.CaptureService == null) return 0;
-            ValheimDiscordRelayPlugin.CaptureService.RequestScreenshot((Client.ScreenshotMode)mode, 0f);
-            return 1;
+            return ValheimDiscordRelayPlugin.CaptureService.RequestScreenshot((Client.ScreenshotMode)mode, 0f) ? 1 : 0;
         }
 
         /// <summary>Presses the F6 hub's screenshot button of the given kind (same code as a click): the hub closes and the screenshot follows.</summary>
@@ -40,6 +39,32 @@ namespace ValheimDiscordRelay.Testing
             Client.ScreenshotHubPage.Press(ValheimDiscordRelayPlugin.CaptureService, (Client.ScreenshotMode)mode);
             return 1;
         }
+
+        /// <summary>How many screenshot buttons the F6 hub page shows right now.</summary>
+        [TestHook("ValheimDiscordRelay.hubButtons")]
+        static int HubButtons()
+        {
+            return ValheimDiscordRelayPlugin.CaptureService == null ? -1 : Client.ScreenshotHubPage.VisibleButtonCount(ValheimDiscordRelayPlugin.CaptureService);
+        }
+
+        /// <summary>Switches one kind of screenshot (0 normal, 1 without HUD, 2 without HUD and player) on (1) or off (0) in this game, like the player's own config switch.</summary>
+        [TestHook("ValheimDiscordRelay.setKindEnabled")]
+        static int SetKindEnabled(int mode, int on)
+        {
+            BepInEx.Configuration.ConfigEntry<bool> entry = mode == 1 ? Client.ClientConfig.ScreenshotHudHiddenEnabled
+                : mode == 2 ? Client.ClientConfig.ScreenshotHudPlayerHiddenEnabled
+                : Client.ClientConfig.ScreenshotNormalEnabled;
+            entry.Value = on != 0;
+            return entry.Value ? 1 : 0;
+        }
+
+        /// <summary>1 when this kind of screenshot can be taken now (on, and a webhook exists for it).</summary>
+        [TestHook("ValheimDiscordRelay.kindActive")]
+        static int KindActive(int mode) { return Client.ClientConfig.ScreenshotKindActive((Client.ScreenshotMode)mode) ? 1 : 0; }
+
+        /// <summary>The webhook URL a screenshot of this kind would go to (own webhook, else the global one).</summary>
+        [TestHook("ValheimDiscordRelay.webhookFor")]
+        static string WebhookFor(int mode) { return Client.ClientConfig.ScreenshotWebhookFor((Client.ScreenshotMode)mode); }
 
         /// <summary>1 while a screenshot is running, 0 when none is.</summary>
         [TestHook("ValheimDiscordRelay.screenshotRunning")]
