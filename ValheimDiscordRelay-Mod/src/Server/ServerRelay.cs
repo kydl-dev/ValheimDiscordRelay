@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
@@ -69,7 +69,7 @@ namespace ValheimDiscordRelay.Server
             _worker = null;
             _registeredRpc = null;
             _serverActive = false;
-            ChatBuckets.Clear();
+            ChatRateLimiter.Reset();
         }
 
         private static void OnRelaySettingChanged(object sender, EventArgs args)
@@ -155,7 +155,7 @@ namespace ValheimDiscordRelay.Server
                 }
 
                 // One player cannot flood the queue and push everybody else's messages out of it.
-                if (!AllowChatFrom(sender, peer.m_playerName))
+                if (!ChatRateLimiter.Allow(sender, peer.m_playerName))
                     return;
 
                 int version = package.ReadInt();
@@ -187,64 +187,6 @@ namespace ValheimDiscordRelay.Server
             }
         }
 
-        /// <summary>A player may send a burst of this many chat lines to Discord ...</summary>
-        private const double ChatBurst = 10.0;
-
-        /// <summary>... and then this many per second on average (normal typing never gets near it).</summary>
-        private const double ChatRefillPerSecond = 1.0;
-
-        private const int MaxRememberedChatPeers = 128;
-
-        private sealed class ChatBucket
-        {
-            public double Tokens = ChatBurst;
-            public DateTime LastUtc = DateTime.UtcNow;
-            public DateTime LastWarnUtc = DateTime.MinValue;
-        }
-
-        // Only touched from the game's main thread (RPC handlers), so no lock is needed.
-        private static readonly Dictionary<long, ChatBucket> ChatBuckets = new Dictionary<long, ChatBucket>();
-
-        /// <summary>
-        /// Token-bucket limit per connected player (RPC path only; the host's own chat is not limited).
-        /// Dropped lines are logged at most once every 30 seconds per player.
-        /// </summary>
-        /// <param name="sender">The sending peer's uid.</param>
-        /// <param name="playerName">The sender's character name, for the log line.</param>
-        /// <returns>True if this chat line may be relayed.</returns>
-        private static bool AllowChatFrom(long sender, string playerName)
-        {
-            DateTime now = DateTime.UtcNow;
-
-            ChatBucket bucket;
-            if (!ChatBuckets.TryGetValue(sender, out bucket))
-            {
-                // Players come and go all week: start over rather than let the table grow without limit.
-                if (ChatBuckets.Count >= MaxRememberedChatPeers)
-                    ChatBuckets.Clear();
-
-                bucket = new ChatBucket();
-                ChatBuckets[sender] = bucket;
-            }
-
-            double elapsed = Math.Max(0.0, (now - bucket.LastUtc).TotalSeconds);
-            bucket.LastUtc = now;
-            bucket.Tokens = Math.Min(ChatBurst, bucket.Tokens + elapsed * ChatRefillPerSecond);
-
-            if (bucket.Tokens >= 1.0)
-            {
-                bucket.Tokens -= 1.0;
-                return true;
-            }
-
-            if ((now - bucket.LastWarnUtc).TotalSeconds >= 30.0)
-            {
-                bucket.LastWarnUtc = now;
-                RelayDiagnostics.Warning("Chat relay from '" + playerName + "' (" + sender + ") is sending too fast; extra lines are not sent to Discord.");
-            }
-
-            return false;
-        }
 
         /// <summary>
         /// Relays a chat message typed by the local player when this game IS the server (a world hosted from
@@ -306,7 +248,7 @@ namespace ValheimDiscordRelay.Server
                 CharacterKey = characterKey
             };
 
-            string username = BuildDiscordUsername(message);
+            string username = RelayUsernames.BuildDiscordUsername(message);
             string content = DiscordFormatting.BuildContent(
                 message,
                 ServerConfig.ShoutAnsi.Value,
@@ -401,7 +343,7 @@ namespace ValheimDiscordRelay.Server
 
                 string name = field != null ? field.GetValue(null) as string : null;
                 if (!string.IsNullOrWhiteSpace(name))
-                    return SanitizeUsername(name.Trim());
+                    return RelayUsernames.SanitizeUsername(name.Trim());
             }
             catch (Exception ex)
             {
@@ -477,7 +419,7 @@ namespace ValheimDiscordRelay.Server
             }
         }
 
-        private static string GetPlatformId(ZNetPeer peer)
+        internal static string GetPlatformId(ZNetPeer peer)
         {
             try
             {
@@ -503,82 +445,5 @@ namespace ValheimDiscordRelay.Server
             return ServerConfig.WebhookUrl.Value != null ? ServerConfig.WebhookUrl.Value.Trim() : string.Empty;
         }
 
-        private static string BuildDiscordUsername(RelayMessage message)
-        {
-            string name = SanitizeUsername(message.PlayerName);
-
-            switch (ServerConfig.NameDisplay.Value)
-            {
-                case NameDisplayMode.NameOnly:
-                    return LimitUsername(name);
-
-                case NameDisplayMode.NameWithIdSuffix:
-                    string id = message.PlatformId ?? "unknown";
-                    string suffix = id.Length <= 4 ? id : id.Substring(id.Length - 4);
-                    return LimitUsername(name + " [" + suffix + "]");
-
-                case NameDisplayMode.NameWithNumber:
-                    return LimitUsername(name + " [" + GetDuplicateNameNumber(message) + "]");
-
-                default:
-                    return LimitUsername(name);
-            }
-        }
-
-        /// <summary>
-        /// Computes a deterministic per-session duplicate-name suffix for NameWithNumber display.
-        /// </summary>
-        /// <param name="message">The relay message whose sender's duplicate number is needed.</param>
-        /// <returns>A 1-based number, stable for the current server session.</returns>
-        private static int GetDuplicateNameNumber(RelayMessage message)
-        {
-            string targetName = message.PlayerName ?? string.Empty;
-            List<string> ids = new List<string>();
-
-            try
-            {
-                if (ZNet.instance != null)
-                {
-                    foreach (ZNetPeer peer in ZNet.instance.GetPeers())
-                    {
-                        if (peer == null || peer.m_playerName != targetName)
-                            continue;
-
-                        string id = GetPlatformId(peer);
-                        if (!ids.Contains(id))
-                            ids.Add(id);
-                    }
-                }
-            }
-            catch
-            {
-            }
-
-            if (!ids.Contains(message.PlatformId ?? string.Empty))
-                ids.Add(message.PlatformId ?? string.Empty);
-
-            ids.Sort(StringComparer.Ordinal);
-
-            int index = ids.IndexOf(message.PlatformId ?? string.Empty);
-            return index >= 0 ? index + 1 : 1;
-        }
-
-        internal static string SanitizeUsername(string value)
-        {
-            if (string.IsNullOrWhiteSpace(value))
-                return "Unknown Player";
-
-            string s = value.Replace("\r", " ").Replace("\n", " ");
-            s = s.Replace("@everyone", "@\u200beveryone")
-                 .Replace("@here", "@\u200bhere");
-            return s.Trim();
-        }
-
-        internal static string LimitUsername(string value)
-        {
-            if (value.Length <= 80)
-                return value;
-            return value.Substring(0, 79) + "…";
-        }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections;
 using System.Globalization;
 using System.IO;
@@ -85,7 +85,7 @@ namespace ValheimDiscordRelay.Client
             public bool Black;
             public int Width;
             public int Height;
-            public ScreenCapturePipeline.FrameStats Stats;
+            public FrameMeasure.FrameStats Stats;
 
             /// <summary>Why the attempt failed, when known; appended to the log line.</summary>
             public string Note;
@@ -98,148 +98,6 @@ namespace ValheimDiscordRelay.Client
 
             /// <summary>Appended to the uploaded file name (before the extension) to show the image is not a normal screenshot.</summary>
             public string FilenameSuffix = string.Empty;
-        }
-
-        // ---------------------------------------------------------------------------------------------------------
-        // Saved strategy preference (survives game restarts)
-        // ---------------------------------------------------------------------------------------------------------
-
-        private static string ScreenshotStrategyFilePath
-        {
-            get { return Path.Combine(BepInEx.Paths.CachePath, ScreenshotStrategyFileName); }
-        }
-
-        /// <summary>
-        /// Identifies the graphics setup the saved strategy was found on. If the player changes GPU or graphics API the
-        /// saved value no longer applies and detection starts over.
-        /// </summary>
-        private static string CurrentGraphicsSignature()
-        {
-            return SystemInfo.graphicsDeviceType + " | " + SystemInfo.graphicsDeviceName;
-        }
-
-        /// <summary>
-        /// Loads the strategy that worked on this PC in an earlier session (if any) and makes it the first one tried.
-        /// Called once at startup.
-        /// </summary>
-        private void LoadSavedScreenshotStrategy()
-        {
-            try
-            {
-                string path = ScreenshotStrategyFilePath;
-                if (!File.Exists(path))
-                {
-                    RelayDiagnostics.Info("Screenshot capture: no saved strategy for this PC yet; starting with the " + _screenshotStrategy + " strategy.");
-                    return;
-                }
-
-                string strategyText = null;
-                string graphics = null;
-
-                foreach (string line in File.ReadAllLines(path))
-                {
-                    if (line.StartsWith("#", StringComparison.Ordinal))
-                        continue;
-
-                    int separator = line.IndexOf('=');
-                    if (separator <= 0)
-                        continue;
-
-                    string key = line.Substring(0, separator).Trim();
-                    string value = line.Substring(separator + 1).Trim();
-
-                    if (key.Equals("strategy", StringComparison.OrdinalIgnoreCase))
-                        strategyText = value;
-                    else if (key.Equals("graphics", StringComparison.OrdinalIgnoreCase))
-                        graphics = value;
-                }
-
-                ScreenshotStrategy parsed = ScreenshotStrategy.Native;
-                bool valid = !string.IsNullOrEmpty(strategyText) &&
-                             Enum.TryParse(strategyText, true, out parsed) &&
-                             Array.IndexOf(CaptureStrategies, parsed) >= 0;
-
-                if (!valid)
-                {
-                    RelayDiagnostics.Warning("Screenshot capture: ignoring the saved strategy file (unreadable strategy '" + strategyText + "'); starting with the " + _screenshotStrategy + " strategy.");
-                    return;
-                }
-
-                string current = CurrentGraphicsSignature();
-                if (!string.Equals(graphics, current, StringComparison.Ordinal))
-                {
-                    RelayDiagnostics.Info("Screenshot capture: the saved strategy (" + parsed + ") was found on '" + graphics + "' but this session runs on '" + current +
-                                          "'; ignoring it and starting with the " + _screenshotStrategy + " strategy.");
-                    return;
-                }
-
-                _screenshotStrategy = parsed;
-                RelayDiagnostics.Info("Screenshot capture: starting with the " + parsed + " strategy saved for this PC (" + current + ").");
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Warning("Screenshot capture: could not read the saved strategy (" + ex.Message + "); starting with the " + _screenshotStrategy + " strategy.");
-            }
-        }
-
-        private static void SaveScreenshotStrategy(ScreenshotStrategy strategy)
-        {
-            try
-            {
-                string text =
-                    "# ValheimDiscordRelay: the screenshot capture strategy that worked on this PC. Delete this file to detect it again." + Environment.NewLine +
-                    "strategy=" + strategy + Environment.NewLine +
-                    "graphics=" + CurrentGraphicsSignature() + Environment.NewLine +
-                    "saved=" + DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture) + Environment.NewLine;
-
-                File.WriteAllText(ScreenshotStrategyFilePath, text);
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Warning("Screenshot capture: could not save the working strategy (" + ex.Message + "); it will be detected again next session.");
-            }
-        }
-
-        /// <summary>
-        /// The strategies for one screenshot: the preferred one, the other capture strategies in default order, then the buffered-frame fallback.
-        /// </summary>
-        private ScreenshotStrategy[] BuildScreenshotStrategyOrder()
-        {
-            ScreenshotStrategy[] order = new ScreenshotStrategy[CaptureStrategies.Length + 1];
-            int next = 0;
-
-            order[next++] = _screenshotStrategy;
-
-            for (int i = 0; i < CaptureStrategies.Length; i++)
-            {
-                if (CaptureStrategies[i] != _screenshotStrategy)
-                    order[next++] = CaptureStrategies[i];
-            }
-
-            order[next] = ScreenshotStrategy.BufferedFrame;
-            return order;
-        }
-
-        // ---------------------------------------------------------------------------------------------------------
-        // Idle release of the screenshot render texture
-        // ---------------------------------------------------------------------------------------------------------
-
-        /// <summary>
-        /// Frees the screenshot render texture once it has been idle for <see cref="ScreenshotIdleReleaseSeconds"/>
-        /// (a 4K render texture is ~33 MB). Called every frame from Tick.
-        /// </summary>
-        private void TickScreenshotIdleRelease()
-        {
-            if (_screenshotIdleReleaseAt <= 0f || _screenshotInProgress || Time.unscaledTime < _screenshotIdleReleaseAt)
-                return;
-
-            _screenshotIdleReleaseAt = 0f;
-
-            if (_screenshotPipeline != null)
-            {
-                _screenshotPipeline.ReleaseResources();
-                RelayDiagnostics.Debug("[Screenshot] Released the idle screenshot render textures.");
-            }
         }
 
         // ---------------------------------------------------------------------------------------------------------
@@ -461,7 +319,7 @@ namespace ValheimDiscordRelay.Client
             {
                 attempt.Width = width;
                 attempt.Height = height;
-                attempt.Stats = ScreenCapturePipeline.MeasureRgb24(rgb24);
+                attempt.Stats = FrameMeasure.MeasureRgb24(rgb24);
                 attempt.Black = attempt.Stats.IsBlack;
 
                 if (!attempt.Black || encodeEvenIfBlack)
@@ -500,7 +358,7 @@ namespace ValheimDiscordRelay.Client
                 attempt.Height = captured.height;
 
                 Color32[] pixels = captured.GetPixels32();
-                attempt.Stats = ScreenCapturePipeline.MeasureColors(pixels);
+                attempt.Stats = FrameMeasure.MeasureColors(pixels);
                 attempt.Black = attempt.Stats.IsBlack;
 
                 if (attempt.Black && !encodeEvenIfBlack)
@@ -573,7 +431,7 @@ namespace ValheimDiscordRelay.Client
 
                 attempt.Width = decoded.width;
                 attempt.Height = decoded.height;
-                attempt.Stats = ScreenCapturePipeline.MeasureColors(decoded.GetPixels32());
+                attempt.Stats = FrameMeasure.MeasureColors(decoded.GetPixels32());
                 attempt.Black = attempt.Stats.IsBlack;
 
                 if (attempt.Black)
@@ -623,148 +481,5 @@ namespace ValheimDiscordRelay.Client
             }
         }
 
-        // ---------------------------------------------------------------------------------------------------------
-        // Diagnostics context
-        // ---------------------------------------------------------------------------------------------------------
-
-        /// <summary>
-        /// A one-line snapshot of the game state around a screenshot: is there a local player, is the game loading,
-        /// teleporting or paused, and is the rolling capture alive. Distinguishes a screen that was genuinely black
-        /// from a capture that went wrong.
-        /// </summary>
-        private string DescribeScreenshotContext()
-        {
-            string player;
-            try
-            {
-                Player local = Player.m_localPlayer;
-                player = local == null
-                    ? "none (menu or loading)"
-                    : "present (teleporting=" + local.IsTeleporting() + ", dead=" + local.IsDead() + ")";
-            }
-            catch (Exception ex)
-            {
-                player = "unknown (" + ex.GetType().Name + ")";
-            }
-
-            string world;
-            try { world = ZNetScene.instance != null ? "loaded" : "not loaded"; }
-            catch (Exception) { world = "unknown"; }
-
-            string paused;
-            try { paused = Game.IsPaused().ToString(); }
-            catch (Exception) { paused = "unknown"; }
-
-            float bufferedAge;
-            FrameEntry buffered = GetNewestBufferedFrame(out bufferedAge);
-            string bufferedText = buffered == null
-                ? "none"
-                : "age " + bufferedAge.ToString("0.00", CultureInfo.InvariantCulture) + "s";
-
-            return "player=" + player +
-                   ", world=" + world +
-                   ", loadingScreen=" + DescribeLoadingScreen() +
-                   ", paused=" + paused +
-                   ", timeScale=" + Time.timeScale.ToString("0.##", CultureInfo.InvariantCulture) +
-                   ", screen=" + Screen.width + "x" + Screen.height + " " + Screen.fullScreenMode +
-                   ", bufferedFrame=" + bufferedText;
-        }
-
-        /// <summary>
-        /// Whether Valheim's loading screen is showing. Read by reflection (Hud.instance.m_loadingScreen) so a change in
-        /// the game's UI classes can only make this say "unknown", never break the build or the screenshot.
-        /// </summary>
-        private static string DescribeLoadingScreen()
-        {
-            try
-            {
-                Type hudType = typeof(Player).Assembly.GetType("Hud");
-                if (hudType == null)
-                    return "unknown";
-
-                const BindingFlags AnyStatic = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static;
-                const BindingFlags AnyInstance = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-
-                FieldInfo instanceField = hudType.GetField("instance", AnyStatic);
-                object hud = instanceField != null ? instanceField.GetValue(null) : null;
-                if (hud == null)
-                    return "no HUD";
-
-                FieldInfo screenField = hudType.GetField("m_loadingScreen", AnyInstance);
-                object screen = screenField != null ? screenField.GetValue(hud) : null;
-                if (screen == null)
-                    return "unknown";
-
-                GameObject go = screen as GameObject;
-                if (go == null)
-                {
-                    Component component = screen as Component;
-                    if (component != null)
-                        go = component.gameObject;
-                }
-
-                if (go == null)
-                    return "unknown";
-
-                string state = go.activeInHierarchy ? "showing" : "hidden";
-
-                PropertyInfo alpha = screen.GetType().GetProperty("alpha", AnyInstance);
-                if (alpha != null && alpha.PropertyType == typeof(float))
-                    state += " (alpha " + ((float)alpha.GetValue(screen, null)).ToString("0.00", CultureInfo.InvariantCulture) + ")";
-
-                return state;
-            }
-            catch (Exception)
-            {
-                return "unknown";
-            }
-        }
-
-        // ---------------------------------------------------------------------------------------------------------
-        // Encoding and upload
-        // ---------------------------------------------------------------------------------------------------------
-
-        private byte[] EncodeScreenshotPng(byte[] rgb24, int width, int height)
-        {
-            EnsureScreenshotEncodeTexture(width, height);
-            _screenshotEncodeTexture.LoadRawTextureData(rgb24);
-            _screenshotEncodeTexture.Apply(false, false);
-
-            byte[] image = ImageConversion.EncodeToPNG(_screenshotEncodeTexture);
-            if (image == null || image.Length == 0)
-                throw new InvalidOperationException("PNG encoding returned no data.");
-
-            return image;
-        }
-
-        private static void QueueScreenshotUpload(string webhookUrl, string playerName, byte[] image, string extension, string contentType, string filenameSuffix)
-        {
-            string filename = "valheim-screenshot-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + filenameSuffix + "." + extension;
-
-            ThreadPool.QueueUserWorkItem(delegate
-            {
-                try
-                {
-                    SendWebhookFile(webhookUrl, playerName, filename, contentType, image);
-                }
-                catch (Exception ex)
-                {
-                    RelayDiagnostics.Error("Screenshot upload failed.", ex);
-                }
-            });
-        }
-
-        private void EnsureScreenshotEncodeTexture(int width, int height)
-        {
-            if (_screenshotEncodeTexture != null && _screenshotEncodeWidth == width && _screenshotEncodeHeight == height)
-                return;
-
-            if (_screenshotEncodeTexture != null)
-                UnityEngine.Object.Destroy(_screenshotEncodeTexture);
-
-            _screenshotEncodeTexture = new Texture2D(width, height, TextureFormat.RGB24, false);
-            _screenshotEncodeWidth = width;
-            _screenshotEncodeHeight = height;
-        }
     }
 }

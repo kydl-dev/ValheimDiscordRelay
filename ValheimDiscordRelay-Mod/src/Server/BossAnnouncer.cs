@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
@@ -295,7 +295,7 @@ namespace ValheimDiscordRelay.Server
             }
 
             string description = BuildDescription(bossName, players);
-            string username = ServerRelay.LimitUsername(ServerRelay.SanitizeUsername(BossConfig.WebhookUsername.Value));
+            string username = RelayUsernames.LimitUsername(RelayUsernames.SanitizeUsername(BossConfig.WebhookUsername.Value));
 
             string json = DiscordFormatting.BuildEmbedWebhookJson(
                 username,

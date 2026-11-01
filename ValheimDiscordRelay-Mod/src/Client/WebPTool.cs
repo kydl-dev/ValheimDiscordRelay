@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -16,49 +16,16 @@ namespace ValheimDiscordRelay.Client
         private static string _toolDirectory;
         private static string _initializationError;
         private static bool _initialized;
-        private const int EncoderTimeoutMilliseconds = 120000;
+
 
         /// <summary>Never fewer frames than this per parallel chunk: every chunk costs one extra key frame.</summary>
         private const int MinFramesPerChunk = 16;
 
-        /// <summary>
-        /// At most a quarter of the machine's logical processors (at least one) may run encoder threads at the same
-        /// time: enough to be much faster on a big CPU, while a small one keeps its other threads for the game.
-        /// </summary>
-        private static readonly int MaxEncoderThreads = Math.Max(1, Environment.ProcessorCount / 4);
 
-        /// <summary>The shared encoder thread budget; every img2webp process holds one slot while it runs.</summary>
-        private static readonly SemaphoreSlim EncoderSlots = new(MaxEncoderThreads, MaxEncoderThreads);
-
-        /// <summary>Set when the game is quitting: running encodes are killed and new ones refuse to start.</summary>
-        private static volatile bool _cancelled;
-        private static readonly object ActiveSync = new();
-        private static readonly List<Process> ActiveProcesses = new();
-
-        /// <summary>
-        /// Kills every running img2webp process and makes any encode that has not started yet return false at once.
-        /// Called when the game is quitting; a worker thread blocked in WaitForExit/ReadToEnd on the encoder would
-        /// otherwise keep the game from shutting down until the encoder (or its 2 minute timeout) finished.
-        /// </summary>
+        /// <summary>Kills every running encoder (the game is quitting); see <see cref="WebPProcessRunner"/>.</summary>
         internal static void CancelActive()
         {
-            _cancelled = true;
-
-            lock (ActiveSync)
-            {
-                foreach (Process active in ActiveProcesses)
-                {
-                    try
-                    {
-                        if (!active.HasExited)
-                            active.Kill();
-                    }
-                    catch (Exception ex)
-                    {
-                        RelayDiagnostics.Debug("Could not terminate img2webp during quit: " + ex.Message);
-                    }
-                }
-            }
+            WebPProcessRunner.CancelActive();
         }
 
         internal static bool IsAvailable()
@@ -83,7 +50,7 @@ namespace ValheimDiscordRelay.Client
             int quality,
             int method)
         {
-            if (_cancelled)
+            if (WebPProcessRunner.Cancelled)
                 return false;
 
             if (!IsAvailable())
@@ -106,7 +73,7 @@ namespace ValheimDiscordRelay.Client
 
             try
             {
-                ValidateFrames(frames);
+                WebPFrameFiles.ValidateFrames(frames);
 
                 string outputDirectory = Path.GetDirectoryName(output);
                 if (string.IsNullOrWhiteSpace(outputDirectory))
@@ -150,10 +117,10 @@ namespace ValheimDiscordRelay.Client
                     return false;
                 }
 
-                // One encoder process per chunk of consecutive frames, never more than MaxEncoderThreads at once
+                // One encoder process per chunk of consecutive frames, never more than WebPProcessRunner.MaxEncoderThreads at once
                 // (that budget is shared by every encode in the game, see EncoderSlots), and never so many that a
                 // chunk gets too short to be worth its own key frame.
-                int chunkCount = Math.Max(1, Math.Min(MaxEncoderThreads, frames.Count / MinFramesPerChunk));
+                int chunkCount = Math.Max(1, Math.Min(WebPProcessRunner.MaxEncoderThreads, frames.Count / MinFramesPerChunk));
 
                 RelayDiagnostics.Info(
                     "WebP encode starting. Executable='" + _toolPath +
@@ -163,7 +130,7 @@ namespace ValheimDiscordRelay.Client
                     ", Quality=" + safeQuality +
                     ", Method=" + safeMethod +
                     ", Workers=" + chunkCount +
-                    " (thread budget " + MaxEncoderThreads + " of " + Environment.ProcessorCount + " logical processors)" +
+                    " (thread budget " + WebPProcessRunner.MaxEncoderThreads + " of " + Environment.ProcessorCount + " logical processors)" +
                     ", Output='" + output + "'.");
 
                 if (chunkCount > 1)
@@ -172,7 +139,7 @@ namespace ValheimDiscordRelay.Client
                     if (EncodeInParallel(frames, output, frameDirectory, chunkCount, safeQuality, safeMethod, duration, out mergeFailed))
                         return VerifyOutput(output);
 
-                    if (_cancelled || !mergeFailed)
+                    if (WebPProcessRunner.Cancelled || !mergeFailed)
                     {
                         SafeDelete(output);
                         return false;
@@ -186,7 +153,7 @@ namespace ValheimDiscordRelay.Client
                 string commandLine = BuildArguments(frames, output, safeQuality, safeMethod, duration);
                 RelayDiagnostics.Info("WebP encoder command: " + commandLine);
 
-                if (!RunEncoder(commandLine, frameDirectory, output, "single"))
+                if (!WebPProcessRunner.RunEncoder(_toolPath, commandLine, frameDirectory, output, "single"))
                 {
                     SafeDelete(output);
                     return false;
@@ -250,7 +217,7 @@ namespace ValheimDiscordRelay.Client
                     {
                         try
                         {
-                            results[index] = RunEncoder(args, frameDirectory, part, label);
+                            results[index] = WebPProcessRunner.RunEncoder(_toolPath, args, frameDirectory, part, label);
                         }
                         catch (Exception ex)
                         {
@@ -267,7 +234,7 @@ namespace ValheimDiscordRelay.Client
                 for (int i = 0; i < chunkCount; i++)
                     threads[i].Join();
 
-                if (_cancelled)
+                if (WebPProcessRunner.Cancelled)
                     return false;
 
                 for (int i = 0; i < chunkCount; i++)
@@ -310,11 +277,11 @@ namespace ValheimDiscordRelay.Client
                     .Append(" -d ")
                     .Append(duration.ToString(CultureInfo.InvariantCulture))
                     .Append(" ")
-                    .Append(QuoteArgument(Path.GetFileName(frame)))
+                    .Append(WebPFrameFiles.QuoteArgument(Path.GetFileName(frame)))
                     .Append(" ");
             }
 
-            args.Append("-o ").Append(QuoteArgument(output));
+            args.Append("-o ").Append(WebPFrameFiles.QuoteArgument(output));
             return args.ToString();
         }
 
@@ -342,267 +309,9 @@ namespace ValheimDiscordRelay.Client
             return true;
         }
 
-        /// <summary>
-        /// Runs one img2webp process, but only once one of the shared encoder slots is free, so the whole game never
-        /// runs more than <see cref="MaxEncoderThreads"/> encoder threads at the same time (a death clip and a boss clip
-        /// finishing together share the budget instead of doubling it).
-        /// </summary>
-        private static bool RunEncoder(string commandLine, string workingDirectory, string output, string label)
-        {
-            while (!EncoderSlots.Wait(250))
-            {
-                if (_cancelled)
-                    return false;
-            }
 
-            try
-            {
-                if (_cancelled)
-                    return false;
 
-                return RunEncoderProcess(commandLine, workingDirectory, output, label);
-            }
-            finally
-            {
-                EncoderSlots.Release();
-            }
-        }
-
-        private static bool RunEncoderProcess(string commandLine, string workingDirectory, string output, string label)
-        {
-            ProcessStartInfo psi = new ProcessStartInfo
-            {
-                FileName = _toolPath,
-                Arguments = commandLine,
-                WorkingDirectory = workingDirectory,
-                UseShellExecute = false,
-                CreateNoWindow = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true
-            };
-
-            using (Process process = new Process())
-            {
-                process.StartInfo = psi;
-
-                try
-                {
-                    if (!process.Start())
-                    {
-                        RelayDiagnostics.Error("img2webp process could not be started (" + label + ").");
-                        return false;
-                    }
-                }
-                catch (Exception ex)
-                {
-                    RelayDiagnostics.Error("Could not start img2webp (" + label + "). Executable='" + _toolPath + "'.", ex);
-                    return false;
-                }
-
-                // The game keeps running while a clip encodes (the player respawns and plays on), so the encoder must
-                // not take CPU time away from it.
-                try { process.PriorityClass = ProcessPriorityClass.BelowNormal; }
-                catch (Exception ex) { RelayDiagnostics.Debug("Could not lower the img2webp priority: " + ex.Message); }
-
-                // Registered so a quit can kill it. Checked under the same lock CancelActive uses, so a quit that
-                // lands between Start() and here still kills this process.
-                lock (ActiveSync)
-                {
-                    ActiveProcesses.Add(process);
-
-                    if (_cancelled)
-                    {
-                        try { process.Kill(); }
-                        catch { }
-                    }
-                }
-
-                try
-                {
-                    string stdout = string.Empty;
-                    string stderr = string.Empty;
-                    Exception stdoutException = null;
-                    Exception stderrException = null;
-
-                    Thread stdoutThread = new Thread(delegate()
-                    {
-                        try { stdout = process.StandardOutput.ReadToEnd(); }
-                        catch (Exception ex) { stdoutException = ex; }
-                    });
-
-                    Thread stderrThread = new Thread(delegate()
-                    {
-                        try { stderr = process.StandardError.ReadToEnd(); }
-                        catch (Exception ex) { stderrException = ex; }
-                    });
-
-                    stdoutThread.IsBackground = true;
-                    stderrThread.IsBackground = true;
-                    stdoutThread.Start();
-                    stderrThread.Start();
-
-                    bool exited = process.WaitForExit(EncoderTimeoutMilliseconds);
-
-                    if (_cancelled)
-                    {
-                        // The game is quitting and CancelActive killed the encoder. Do not wait for the reader
-                        // threads (they are background threads and end on their own).
-                        RelayDiagnostics.Info("WebP encode (" + label + ") cancelled because the game is quitting.");
-                        try { if (!process.HasExited) process.Kill(); }
-                        catch { }
-                        SafeDelete(output);
-                        return false;
-                    }
-
-                    if (!exited)
-                    {
-                        RelayDiagnostics.Error(
-                            "img2webp (" + label + ") timed out after " + EncoderTimeoutMilliseconds +
-                            " ms. Executable='" + _toolPath +
-                            "', Output='" + output + "'.");
-
-                        try { process.Kill(); }
-                        catch (Exception ex) { RelayDiagnostics.Error("Could not terminate timed-out img2webp process.", ex); }
-
-                        stdoutThread.Join(5000);
-                        stderrThread.Join(5000);
-                        return false;
-                    }
-
-                    stdoutThread.Join(5000);
-                    stderrThread.Join(5000);
-
-                    int exitCode = process.ExitCode;
-
-                    if (stdoutException != null)
-                        RelayDiagnostics.Error("Could not read img2webp stdout.", stdoutException);
-                    if (stderrException != null)
-                        RelayDiagnostics.Error("Could not read img2webp stderr.", stderrException);
-
-                    if (!string.IsNullOrWhiteSpace(stdout))
-                        RelayDiagnostics.Info("img2webp stdout (" + label + "):\n" + stdout.TrimEnd());
-                    if (!string.IsNullOrWhiteSpace(stderr))
-                        RelayDiagnostics.Info("img2webp stderr (" + label + "):\n" + stderr.TrimEnd());
-
-                    if (exitCode != 0)
-                    {
-                        RelayDiagnostics.Error(
-                            "img2webp failed (" + label + "). ExitCode=" + exitCode +
-                            ", Output='" + output + "'.");
-                        return false;
-                    }
-
-                    if (!File.Exists(output) || new FileInfo(output).Length <= 0)
-                    {
-                        RelayDiagnostics.Error(
-                            "img2webp (" + label + ") returned exit code 0 but did not produce a usable output file: '" + output + "'.");
-                        SafeDelete(output);
-                        return false;
-                    }
-
-                    return true;
-                }
-                finally
-                {
-                    lock (ActiveSync)
-                    {
-                        ActiveProcesses.Remove(process);
-                    }
-                }
-            }
-        }
-
-        private static void ValidateFrames(List<string> frames)
-        {
-            for (int i = 0; i < frames.Count; i++)
-            {
-                string frame = frames[i];
-
-                if (string.IsNullOrWhiteSpace(frame))
-                    throw new InvalidDataException("Frame " + i + " has an empty path.");
-
-                if (!File.Exists(frame))
-                    throw new FileNotFoundException("Frame " + i + " does not exist.", frame);
-
-                FileInfo info = new FileInfo(frame);
-                if (info.Length <= 0)
-                    throw new InvalidDataException("Frame " + i + " is empty: " + frame);
-
-                if (!IsSupportedImageFile(frame))
-                    throw new InvalidDataException("Frame " + i + " has an unsupported image extension: " + frame);
-
-                if (!HasValidImageSignature(frame))
-                    throw new InvalidDataException("Frame " + i + " does not have a valid JPEG/PNG signature: " + frame);
-            }
-        }
-
-        private static bool IsSupportedImageFile(string path)
-        {
-            string extension = Path.GetExtension(path);
-            return string.Equals(extension, ".jpg", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(extension, ".jpeg", StringComparison.OrdinalIgnoreCase) ||
-                   string.Equals(extension, ".png", StringComparison.OrdinalIgnoreCase);
-        }
-
-        private static bool HasValidImageSignature(string path)
-        {
-            byte[] header = new byte[8];
-            using (FileStream stream = File.OpenRead(path))
-            {
-                int total = 0;
-                while (total < header.Length)
-                {
-                    int read = stream.Read(header, total, header.Length - total);
-                    if (read <= 0)
-                        return false;
-                    total += read;
-                }
-            }
-
-            bool png = header[0] == 0x89 && header[1] == 0x50 && header[2] == 0x4E &&
-                       header[3] == 0x47 && header[4] == 0x0D && header[5] == 0x0A &&
-                       header[6] == 0x1A && header[7] == 0x0A;
-
-            bool jpg = header[0] == 0xFF && header[1] == 0xD8 && header[2] == 0xFF;
-            return png || jpg;
-        }
-
-        private static string QuoteArgument(string value)
-        {
-            if (value == null)
-                return "\"\"";
-
-            StringBuilder result = new StringBuilder();
-            result.Append('"');
-            int backslashes = 0;
-
-            foreach (char c in value)
-            {
-                if (c == '\\')
-                {
-                    backslashes++;
-                    continue;
-                }
-
-                if (c == '"')
-                {
-                    result.Append('\\', backslashes * 2 + 1);
-                    result.Append('"');
-                    backslashes = 0;
-                    continue;
-                }
-
-                result.Append('\\', backslashes);
-                backslashes = 0;
-                result.Append(c);
-            }
-
-            result.Append('\\', backslashes * 2);
-            result.Append('"');
-            return result.ToString();
-        }
-
-        private static void SafeDelete(string path)
+        internal static void SafeDelete(string path)
         {
             try
             {
