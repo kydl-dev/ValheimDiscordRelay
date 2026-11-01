@@ -6,6 +6,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(ValheimRefs)\UnityEngine.CoreModule.dll</HintPath><Private>true</Private></Reference>
+    <!-- ReportDeathCauseTests: the report code runs on the built DLL with fake deaths; it needs BepInEx; the game types ZPackage / HitData are reached by reflection (assembly_valheim has a global class Version that clashes with System.Version) -->
+    <Reference Include="BepInEx"><HintPath>$(ValheimRefs)\BepInEx.dll</HintPath><Private>false</Private></Reference>
     <!-- PatchTargetsTests: reads the mod and the game DLLs with Mono.Cecil (metadata only) -->
     <Reference Include="Mono.Cecil"><HintPath>$(ValheimRefs)\Mono.Cecil.dll</HintPath><Private>true</Private></Reference>
   </ItemGroup>
