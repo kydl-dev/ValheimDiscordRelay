@@ -337,7 +337,7 @@ namespace ValheimDiscordRelay.Client
         /// accept that sender name), the same upload is repeated once under <see cref="ClipConfig.FallbackSenderName"/>,
         /// and that name is then used for every later clip.
         /// </summary>
-        private static void SendClipFile(string webhookUrl, string filename, byte[] file, string content)
+        internal static void SendClipFile(string webhookUrl, string filename, byte[] file, string content)
         {
             string sender = _clipSenderNameRejected ? ClipConfig.FallbackSenderName : ClipConfig.SenderName;
 

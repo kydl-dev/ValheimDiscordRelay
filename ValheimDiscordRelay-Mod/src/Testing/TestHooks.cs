@@ -94,5 +94,53 @@ namespace ValheimDiscordRelay.Testing
         {
             return ModSettings.EnableAll == null ? -1 : (ModSettings.EnableAll.Value ? 1 : 0);
         }
+
+        // ---- live Discord checks (suite test discord-live): the webhook comes from the environment variable VDR_TEST_WEBHOOK (never from a file in git)
+
+        /// <summary>The test webhook from the environment, or null (the live test is then skipped).</summary>
+        static string LiveWebhook()
+        {
+            string url = System.Environment.GetEnvironmentVariable("VDR_TEST_WEBHOOK");
+            return string.IsNullOrWhiteSpace(url) ? null : url.Trim();
+        }
+
+        /// <summary>
+        /// Sends one chat line to the live test webhook through the real WebhookWorker (the server's sender), under the given player name.
+        /// A name with "discord" in it is refused by Discord with HTTP 400 and must arrive anyway under the neutral name. Returns "ok sent" or "ok skipped (...)" when no webhook is set.
+        /// </summary>
+        [TestHook("ValheimDiscordRelay.liveChat")]
+        static string LiveChat(string name)
+        {
+            string url = LiveWebhook();
+            if (url == null) return "ok skipped (VDR_TEST_WEBHOOK is not set)";
+
+            Server.WebhookWorker worker = new Server.WebhookWorker();
+            worker.Start();
+            worker.Enqueue(url, name, "[VDR test] chat line from player '" + name + "'");
+            System.Threading.Thread.Sleep(1500);
+            worker.Stop(15000);   // keeps sending what is queued, for at most 15 seconds
+            return "ok sent";
+        }
+
+        /// <summary>
+        /// Uploads a tiny WebP as a clip to the live test webhook with the real clip sender code. Returns "ok", "ok skipped (...)" when no webhook is set, or the error text.
+        /// </summary>
+        [TestHook("ValheimDiscordRelay.liveClip")]
+        static string LiveClip()
+        {
+            string url = LiveWebhook();
+            if (url == null) return "ok skipped (VDR_TEST_WEBHOOK is not set)";
+
+            try
+            {
+                byte[] webp = System.Convert.FromBase64String("UklGRhoAAABXRUJQVlA4TA0AAAAvAAAAEAcQERGIiP4HAA==");
+                Client.ClientCaptureService.SendClipFile(url, "vdr-test.webp", webp, "[VDR test] clip upload");
+                return "ok";
+            }
+            catch (System.Exception ex)
+            {
+                return "error: " + ex.Message;
+            }
+        }
     }
 }
