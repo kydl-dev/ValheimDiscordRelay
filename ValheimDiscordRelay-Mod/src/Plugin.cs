@@ -23,7 +23,7 @@ namespace ValheimDiscordRelay
     {
         public const string ModGuid = "com.kydldev.ValheimDiscordRelay";   // also the config file name: com.kydldev.ValheimDiscordRelay.cfg
         public const string ModName = "ValheimDiscordRelay";
-        public const string ModVersion = "2.0.0";
+        public const string ModVersion = "2.1.0";
 
         /// <summary>
         /// Names what is special about this build, so a log can be matched to the code that produced it even when the
@@ -67,6 +67,13 @@ namespace ValheimDiscordRelay
 
             CaptureService = new ClientCaptureService(this);
             CaptureService.Initialize();
+
+            // The F6 hub gets a Screenshots tab with one button per screenshot kind (a game client only; a dedicated server has no hub window).
+            if (!Application.isBatchMode)
+            {
+                try { ScreenshotHubPage.Register(ModGuid, Config, CaptureService); }
+                catch (Exception ex) { RelayDiagnostics.Error("Could not register the Screenshots tab in the KY hub.", ex); }
+            }
 
             _harmony = new Harmony(ModGuid);
 

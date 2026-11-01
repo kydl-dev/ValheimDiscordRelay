@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using BepInEx.Configuration;
 using Kydl.Common;
 using UnityEngine;
@@ -116,6 +116,10 @@ namespace ValheimDiscordRelay
                 "(The server must also have [Screenshots] Enable on.)");
             Client.ClientConfig.ScreenshotKey = c.Bind("Screenshots", "Client - Key", new KeyboardShortcut(KeyCode.PageUp),
                 "Key that captures the current rendered Valheim screen and sends it to Discord. Set to None to disable the hotkey.");
+            Client.ClientConfig.ScreenshotHudHiddenKey = c.Bind("Screenshots", "Client - HUD Hidden Key", new KeyboardShortcut(KeyCode.P),
+                "Key that hides the whole HUD (like Ctrl+F3), takes a screenshot and shows the HUD again. Does nothing while you type in the chat, the console or a text box. Set to None to disable.");
+            Client.ClientConfig.ScreenshotHudPlayerHiddenKey = c.Bind("Screenshots", "Client - HUD And Player Hidden Key", new KeyboardShortcut(KeyCode.P, KeyCode.LeftAlt),
+                "Key that hides the HUD and your own character, takes a screenshot and brings both back. Does nothing while you type in the chat, the console or a text box. Set to None to disable.");
             Client.ClientConfig.IncludeScreenshotPlayerName = c.Bind("Screenshots", "Client - Include Player Name", true,
                 "Use the local Valheim character name as the Discord webhook username for manual screenshots.");
         }

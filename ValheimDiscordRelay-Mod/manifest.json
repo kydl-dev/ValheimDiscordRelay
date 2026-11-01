@@ -1,6 +1,6 @@
 {
   "name": "ValheimDiscordRelay",
-  "version_number": "2.0.0",
+  "version_number": "2.1.0",
   "website_url": "",
   "description": "Relay Valheim chat and shouts to Discord via webhooks, with client screenshots, hotkey video clips, automatic player death and boss death videos plus server lifecycle and intercepted player arrival-leaving notifications.",
   "dependencies": [

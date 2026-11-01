@@ -1,11 +1,13 @@
 {
   "name": "hub-page",
-  "description": "The mod is listed in the KY hub (its config entries are the automatic Settings tab) and the hub opens to it",
+  "description": "The mod is listed in the KY hub with a Settings tab (its config entries) and a Screenshots tab, and the hub opens to the Screenshots tab",
   "timeout": 60,
   "steps": [
-    { "do": "hook", "name": "kc.hubOpen", "args": { "mod": "com.kydldev.ValheimDiscordRelay" }, "expect": true },
+    { "do": "hook", "name": "kc.hubOpen", "args": { "mod": "com.kydldev.ValheimDiscordRelay", "tab": "screenshots" }, "expect": true },
     { "do": "wait", "seconds": 1 },
     { "do": "hook", "name": "kc.hubMods", "contains": "com.kydldev.ValheimDiscordRelay" },
+    { "do": "hook", "name": "kc.hubTabs", "args": { "mod": "com.kydldev.ValheimDiscordRelay" }, "contains": "settings", "label": "Settings tab" },
+    { "do": "hook", "name": "kc.hubTabs", "args": { "mod": "com.kydldev.ValheimDiscordRelay" }, "contains": "screenshots", "label": "Screenshots tab" },
     { "do": "hook", "name": "kc.hubClose" }
   ],
   "asserts": [ { "check": "noErrors", "source": "ValheimDiscordRelay" } ]

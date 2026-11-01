@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.1.0
+
+### New
+- **Two more kinds of screenshot.** Besides the normal screenshot (`PageUp`, HUD on, unchanged):
+  - **`P`: screenshot without HUD.** Every HUD element is hidden the way Ctrl+F3 hides it, the screenshot is taken, then the HUD comes back (it stays hidden if you had hidden it yourself with Ctrl+F3).
+  - **`Alt` + `P`: screenshot without HUD and without your own character.** The same, and your character (with armour, weapons and shadow) is hidden for the moment of the capture.
+  - The uploaded file names end in `-nohud` and `-nohud-noplayer`. `P` and `Alt` + `P` are not bound by Valheim itself. Both can be changed or switched off in `[Screenshots]` (`Client - HUD Hidden Key`, `Client - HUD And Player Hidden Key`).
+  - The two new keys do nothing while you type in the chat, the console or a text box. The normal screenshot key works at any time, also while the chat is open.
+  - The death-video frame fallback is never used for the two new kinds, because those frames still show the HUD.
+- **A "Screenshots" tab in the KY hub (F6)** with one button per kind. A button closes the window and takes that screenshot, the same as pressing its key. The tab also shows whether screenshots are on and whether the server has a webhook. The Settings tab stays as it was.
+
+### Changed
+- Code only: every class is now at most 500 lines (split into partial classes by responsibility; no behaviour change).
 ## 2.0.0
 
 **Breaking: client AND server must update together, and the config file is new.**

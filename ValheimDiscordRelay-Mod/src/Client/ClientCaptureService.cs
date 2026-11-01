@@ -138,13 +138,7 @@ namespace ValheimDiscordRelay.Client
             // guard); whether a death is announced is decided in NotifyDeath by the [Player Deaths] switches.
             CheckLocalPlayerLifecycle();
 
-            if (ClientConfig.ScreenshotsActive &&
-                !_screenshotInProgress &&
-                IsScreenshotHotkeyDown(ClientConfig.ScreenshotKey.Value) &&
-                !ClientTextUtils.IsTypingInGame())
-            {
-                _host.StartCoroutine(CaptureManualScreenshot());
-            }
+            TickScreenshotHotkeys();
 
             TickClip();
 
@@ -166,27 +160,6 @@ namespace ValheimDiscordRelay.Client
                 _nextFrameTime = Time.unscaledTime + interval;
                 _host.StartCoroutine(CaptureRollingFrame());
             }
-        }
-
-        /// <summary>
-        /// True on the frame the screenshot hotkey goes down. Deliberately not <c>KeyboardShortcut.IsDown()</c>: BepInEx's
-        /// version also requires that no other keyboard key is held (it rejects the press while e.g. W or Shift is down),
-        /// which made the screenshot silently fail during gameplay. Here only the main key press and the configured
-        /// modifiers (if any) matter; any other held keys are ignored.
-        /// </summary>
-        private static bool IsScreenshotHotkeyDown(KeyboardShortcut shortcut)
-        {
-            KeyCode mainKey = shortcut.MainKey;
-            if (mainKey == KeyCode.None || !Input.GetKeyDown(mainKey))
-                return false;
-
-            foreach (KeyCode modifier in shortcut.Modifiers)
-            {
-                if (!Input.GetKey(modifier))
-                    return false;
-            }
-
-            return true;
         }
 
         private void CleanupOldFiles()

@@ -244,7 +244,7 @@ namespace ValheimDiscordRelay.Client
                     yield break;
                 }
 
-                QueueScreenshotUpload(webhookUrl, playerName, toSend.Image, toSend.Extension, toSend.ContentType, toSend.FilenameSuffix);
+                QueueScreenshotUpload(webhookUrl, playerName, toSend.Image, toSend.Extension, toSend.ContentType, toSend.FilenameSuffix + ModeFileSuffix(_screenshotMode));
             }
             finally
             {
@@ -279,6 +279,15 @@ namespace ValheimDiscordRelay.Client
 
                 if (strategy == ScreenshotStrategy.BufferedFrame)
                 {
+                    if (_screenshotMode != ScreenshotMode.Normal)
+                    {
+                        // The buffered death-video frames still show the HUD and the player.
+                        attempt.Failed = true;
+                        attempt.Note = "buffered frames are not used for HUD-free screenshots";
+                        attempt.Done = true;
+                        return;
+                    }
+
                     CaptureScreenshotFromBufferedFrame(attempt);
                     return;
                 }

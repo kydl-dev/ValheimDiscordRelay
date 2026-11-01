@@ -148,7 +148,9 @@ The mod uses ServerSync for the shared settings and a small admin-only channel f
 | `Enable` | `true` | Synced. Turn off to disable screenshots for every player. |
 | `Server - Webhook URL` | empty | Synced. The screenshot webhook. |
 | `Client - Enabled` | `true` | Allow the screenshot key in this game. |
-| `Client - Key` | `PageUp` | `None` disables it. Works while other keys (walking, Shift) are held. |
+| `Client - Key` | `PageUp` | Normal screenshot (HUD on). `None` disables it. Works while other keys (walking, Shift) are held. |
+| `Client - HUD Hidden Key` | `P` | Screenshot without HUD (like Ctrl+F3). `None` disables it. Not while typing. |
+| `Client - HUD And Player Hidden Key` | `Alt + P` | Screenshot without HUD and without your own character. `None` disables it. Not while typing. |
 | `Client - Include Player Name` | `true` | Use your character name as the Discord sender (otherwise `Valheim Player`). |
 
 ### `[Clips]`
@@ -242,7 +244,11 @@ The player's game sends only the chat type and the text; the **server works out 
 
 ### Manual screenshots
 
-Press `PageUp` (default) to capture the final rendered frame, including UI added by other mods. The PNG (`valheim-screenshot-<date>-<time>.png`) is uploaded straight from the client under your character name; there is no message text. The key does nothing while you are typing in the chat, the console, or a sign / map-pin text box.
+Press `PageUp` (default) to capture the final rendered frame, including UI added by other mods. The PNG (`valheim-screenshot-<date>-<time>.png`) is uploaded straight from the client under your character name; there is no message text. The normal screenshot key works at any time.
+
+**Screenshots without HUD.** `P` hides every HUD element the way Ctrl+F3 does, takes the screenshot and shows the HUD again (a HUD you had hidden yourself stays hidden). `Alt` + `P` also hides your own character for the moment of the capture. The files end in `-nohud` and `-nohud-noplayer`. Valheim does not use `P` or `Alt` + `P` itself; change them under `[Screenshots]` if another mod does. These two keys do nothing while you are typing in the chat, the console, or a sign / map-pin text box. The death-video frame fallback is not used for them (those frames show the HUD).
+
+**F6 hub.** The mod's **Screenshots** tab has one button per kind; a button closes the window and takes that screenshot like its key.
 
 **Black-screenshot protection.** Every screenshot is checked for brightness. If it comes back black, other capture strategies are tried automatically, and as a last resort the newest frame from the death-video buffer is sent (needs death videos on; the file name ends in `-buffered`). If every attempt is black, the last frame is sent anyway, since the screen may genuinely be black. The strategy that worked is remembered for this PC and graphics setup in `BepInEx/cache/ValheimDiscordRelay.ScreenshotStrategy.txt`; delete the file to detect it again. Each screenshot logs the game state (player present, loading, teleporting, and so on), which shows whether a black result was a capture problem or a genuinely black screen.
 

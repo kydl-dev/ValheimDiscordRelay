@@ -1,4 +1,4 @@
-using BepInEx.Configuration;
+﻿using BepInEx.Configuration;
 using UnityEngine;
 
 namespace ValheimDiscordRelay.Client
@@ -30,6 +30,8 @@ namespace ValheimDiscordRelay.Client
         internal static ConfigEntry<string> ScreenshotWebhookUrl;
         internal static ConfigEntry<bool> ScreenshotEnabled;
         internal static ConfigEntry<KeyboardShortcut> ScreenshotKey;
+        internal static ConfigEntry<KeyboardShortcut> ScreenshotHudHiddenKey;
+        internal static ConfigEntry<KeyboardShortcut> ScreenshotHudPlayerHiddenKey;
         internal static ConfigEntry<bool> IncludeScreenshotPlayerName;
 
         // [Player Deaths]
