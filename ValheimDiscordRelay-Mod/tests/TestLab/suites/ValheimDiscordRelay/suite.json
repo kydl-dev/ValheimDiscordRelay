@@ -1,0 +1,500 @@
+{
+    "name":  "ValheimDiscordRelay",
+    "description":  "ValheimDiscordRelay: starts clean, every feature starts and stops with its own Enable switch (EnableAll stops all), the Settings and Screenshots tabs are in the KY hub, the three screenshot kinds work, live Discord webhook (KydlCore D-084: every mod ships a suite)",
+    "requireMods":  [
+                        {
+                            "guid":  "com.kydldev.ValheimDiscordRelay",
+                            "minVersion":  "2.0.0"
+                        },
+                        {
+                            "guid":  "com.kydldev.KydlCore",
+                            "minVersion":  "0.1.0"
+                        }
+                    ],
+    "configOverrides":  [
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "General",
+                                "key":  "EnableAll",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "General",
+                                "key":  "Server - Require Same Version",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "General",
+                                "key":  "Server - Log Successful Sends",
+                                "value":  "false"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "DebugLog",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Normal Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Shout Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Max Message Length",
+                                "value":  "1800"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Name Display",
+                                "value":  "NameOnly"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Shout Prefix",
+                                "value":  "\u001b[2;31m"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Normal Prefix",
+                                "value":  "\u001b[2;36m"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Queue Limit",
+                                "value":  "100"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Server - Minimum Send Interval Ms",
+                                "value":  "250"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Chat",
+                                "key":  "Client - Max Message Length",
+                                "value":  "1000"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Server - Webhook URL",
+                                "value":  "{{secret:VDR_TEST_WEBHOOK}}?wait=true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Server - HUD Hidden Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Server - HUD And Player Hidden Webhook URL",
+                                "value":  "{{secret:VDR_TEST_WEBHOOK}}?wait=false"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - Normal Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - HUD Hidden Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - HUD And Player Hidden Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - Key",
+                                "value":  "PageUp"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - HUD Hidden Key",
+                                "value":  "P"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - HUD And Player Hidden Key",
+                                "value":  "P + LeftAlt"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Screenshots",
+                                "key":  "Client - Include Player Name",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Client - Key",
+                                "value":  "PageDown"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Client - Include Player Name",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Client - Pre Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Clips",
+                                "key":  "Client - Post Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Video Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Video FPS",
+                                "value":  "30"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Video Resolution",
+                                "value":  "960x540"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Video Pre Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Video Post Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Death Camera",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Death Camera Height",
+                                "value":  "6"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Deaths",
+                                "key":  "Client - Death Camera Look At Killer",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Server - Webhook Username",
+                                "value":  "Boss Death Announcement!"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Server - Video Source",
+                                "value":  "Boss Owner"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Video Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Video FPS",
+                                "value":  "30"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Video Resolution",
+                                "value":  "960x540"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Video Pre Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Boss Death",
+                                "key":  "Client - Video Post Duration",
+                                "value":  "4"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Use Discord Webhook Name",
+                                "value":  "false"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Up Notification",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Down Notification",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Restart Notification",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Server Notifications",
+                                "key":  "Server - Restart Window Seconds",
+                                "value":  "120"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Notifications",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Notifications",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Notifications",
+                                "key":  "Server - Arrival Avatar URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Player Notifications",
+                                "key":  "Server - Leave Avatar URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Enable",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Server - Webhook URL",
+                                "value":  ""
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Server - Report Day",
+                                "value":  "Sunday"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Server - Report Time",
+                                "value":  "20:00"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Server - Send Test Report",
+                                "value":  "false"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Server - Window Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Enabled",
+                                "value":  "true"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Window Key",
+                                "value":  "Home"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Window Scale",
+                                "value":  "0"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Window Style",
+                                "value":  "Classic"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Window Width",
+                                "value":  "0"
+                            },
+                            {
+                                "guid":  "com.kydldev.ValheimDiscordRelay",
+                                "section":  "Weekly Report",
+                                "key":  "Client - Window Height",
+                                "value":  "0"
+                            }
+                        ],
+    "resetBetweenTests":  true,
+    "tests":  [
+                  "startup-clean",
+                  "hub-page",
+                  "feature-toggle",
+                  "screenshot-modes",
+                  "hub-screenshot-button",
+                  "screenshot-kinds",
+                  "discord-live"
+              ]
+}

@@ -1,0 +1,46 @@
+{
+    "name":  "discord-look",
+    "description":  "What arrives in the Discord test channel looks right: chat lines under the right names, the clip, the three screenshots",
+    "manualOnly":  true,
+    "timeout":  400,
+    "steps":  [
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.arena",
+                      "contains":  "arena at",
+                      "label":  "start on the arena spot"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.liveChat",
+                      "args":  {
+                                   "name":  "Plain Dave"
+                               },
+                      "contains":  "ok",
+                      "label":  "chat line, normal name"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.screenshot",
+                      "args":  {
+                                   "mode":  0
+                               },
+                      "expect":  1,
+                      "label":  "normal screenshot"
+                  },
+                  {
+                      "do":  "wait",
+                      "seconds":  10
+                  },
+                  {
+                      "do":  "checkpoint",
+                      "message":  "Open the Discord test channel. Is the chat line there under the player name and is the screenshot sharp with the HUD visible?"
+                  }
+              ],
+    "asserts":  [
+                    {
+                        "check":  "noErrors",
+                        "source":  "ValheimDiscordRelay"
+                    }
+                ]
+}

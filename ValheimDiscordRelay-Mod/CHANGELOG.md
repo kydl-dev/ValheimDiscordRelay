@@ -2,6 +2,10 @@
 
 ## 2.0.0
 
+- Ported to the KydlDev layout (KydlCore feature switches, new source layout, TestLab suites). No gameplay or config change. Not tested in game yet.
+- Network check is now declared with `VersionCheckOnly` (Patch level); the mod's own exact-version check for players stays.
+- Every feature (chat, screenshots, clips, player deaths, boss death, server notifications, player notifications, weekly report) now starts and stops with its own `Enable` switch and with `[General] EnableAll`, live.
+
 **Breaking: client AND server must update together, and the config file is new.**
 
 ### New

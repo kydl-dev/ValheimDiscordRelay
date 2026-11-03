@@ -1,0 +1,28 @@
+{
+    "name":  "hub-look",
+    "description":  "The Settings and Screenshots tabs look right in the shared KydlCore theme and F6 / Esc open and close the hub with real keys",
+    "manualOnly":  true,
+    "timeout":  300,
+    "steps":  [
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.arena",
+                      "contains":  "arena at",
+                      "label":  "start on the arena spot"
+                  },
+                  {
+                      "do":  "checkpoint",
+                      "message":  "Press F6, pick Valheim Discord Relay. Do the Settings and Screenshots tabs use the shared look (dark panel, gold accents, readable text, nothing cut off)?"
+                  },
+                  {
+                      "do":  "checkpoint",
+                      "message":  "Press Esc. Is the hub closed and can you move / look around again (input released)?"
+                  }
+              ],
+    "asserts":  [
+                    {
+                        "check":  "noErrors",
+                        "source":  "ValheimDiscordRelay"
+                    }
+                ]
+}

@@ -1,0 +1,17 @@
+{
+  "name": "hub-screenshot-button",
+  "description": "The F6 hub's screenshot button closes the hub and the screenshot (without HUD) follows; the HUD is back afterwards",
+  "timeout": 90,
+  "steps": [
+    { "do": "hook", "name": "valheimdiscordrelay.arena", "contains": "arena at", "label": "start on the arena spot" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "kc.hubOpen", "args": { "mod": "com.kydldev.ValheimDiscordRelay", "tab": "screenshots" }, "expect": true },
+    { "do": "wait", "seconds": 1 },
+    { "do": "hook", "name": "valheimdiscordrelay.hubButton", "args": { "mode": 1 }, "expect": 1 },
+    { "do": "hook", "name": "kc.hubIsOpen", "expect": false, "label": "hub closed by the button" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshotRunning", "expect": 0 },
+    { "do": "hook", "name": "valheimdiscordrelay.hudHidden", "expect": 0, "label": "HUD back" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "ValheimDiscordRelay" } ]
+}

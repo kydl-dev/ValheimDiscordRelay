@@ -11,6 +11,11 @@ secrets/
 # --- references live in the shared reference folder (never in this repo); an old per-project copy stays ignored ---
 /*-Mod/ref/
 /*-Tests/.nuget/
+/*-Mod/tests/.nuget/
+/*-Mod/tests/**/bin/
+/*-Mod/tests/**/obj/
+/*-Mod/docs/
+/*-Mod/build/*.dll
 /*-Unity/ref/
 /_backup*/
 

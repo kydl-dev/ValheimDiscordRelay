@@ -1,0 +1,25 @@
+{
+    "stryker-config":  {
+                           "mutate":  [
+                                          "**/Kydl.Common/ModLog.cs",
+                                          "**/Kydl.Common/Tunable.cs"
+                                      ],
+                           "ignore-methods":  [
+                                                  "ModLog.Verbose",
+                                                  "ModLog.VerboseWarn",
+                                                  "ModLog.Info",
+                                                  "ModLog.Warn",
+                                                  "ModLog.Error"
+                                              ],
+                           "reporters":  [
+                                             "html",
+                                             "json",
+                                             "progress"
+                                         ],
+                           "thresholds":  {
+                                              "high":  90,
+                                              "low":  80,
+                                              "break":  0
+                                          }
+                       }
+}

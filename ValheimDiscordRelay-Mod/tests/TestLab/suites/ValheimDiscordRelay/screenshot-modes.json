@@ -1,0 +1,23 @@
+{
+  "name": "screenshot-modes",
+  "description": "The three screenshot kinds (with HUD, without HUD, without HUD and player) each run to the end, upload to the webhook (a local receiver in the dev run), and leave the HUD and the character exactly as they were",
+  "timeout": 120,
+  "steps": [
+    { "do": "hook", "name": "valheimdiscordrelay.arena", "contains": "arena at", "label": "start on the arena spot" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "valheimdiscordrelay.playerRenderers", "min": 1, "label": "player visible before" },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshot", "args": { "mode": 0 }, "expect": 1, "label": "normal" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshotRunning", "expect": 0 },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshot", "args": { "mode": 1 }, "expect": 1, "label": "no HUD" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshotRunning", "expect": 0 },
+    { "do": "hook", "name": "valheimdiscordrelay.hudHidden", "expect": 0, "label": "HUD back after no-HUD" },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshot", "args": { "mode": 2 }, "expect": 1, "label": "no HUD, no player" },
+    { "do": "wait", "seconds": 8 },
+    { "do": "hook", "name": "valheimdiscordrelay.screenshotRunning", "expect": 0 },
+    { "do": "hook", "name": "valheimdiscordrelay.hudHidden", "expect": 0, "label": "HUD back after no-HUD-no-player" },
+    { "do": "hook", "name": "valheimdiscordrelay.playerRenderers", "min": 1, "label": "player back" }
+  ],
+  "asserts": [ { "check": "noErrors", "source": "ValheimDiscordRelay" } ]
+}

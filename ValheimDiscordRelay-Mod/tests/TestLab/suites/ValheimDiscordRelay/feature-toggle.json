@@ -1,0 +1,1102 @@
+{
+    "name":  "feature-toggle",
+    "description":  "EnableAll off stops all eight features; each Enable switch stops only its own feature; on starts them again. The hub tabs stay.",
+    "timeout":  120,
+    "steps":  [
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.arena",
+                      "contains":  "arena at",
+                      "label":  "start on the arena spot"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport running at start"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.tabRegistered",
+                      "args":  {
+                                   "id":  "settings"
+                               },
+                      "expect":  true,
+                      "label":  "settings tab registered"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.tabRegistered",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots tab registered"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Chat/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "chat"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Chat/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Chat/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "chat"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Screenshots/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "screenshots"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Screenshots/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Screenshots/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "screenshots"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Clips/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "clips"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Clips/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Clips/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "clips"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Player Deaths/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playerdeaths"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Player Deaths/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Player Deaths/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playerdeaths"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Boss Death/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "bossdeath"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Boss Death/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Boss Death/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "bossdeath"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Server Notifications/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "servernotifications"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Server Notifications/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Server Notifications/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "servernotifications"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Player Notifications/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playernotifications"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  true,
+                      "label":  "weeklyreport unaffected by Player Notifications/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Player Notifications/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playernotifications"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Weekly Report/Enable":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "weeklyreport"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  true,
+                      "label":  "chat unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  true,
+                      "label":  "screenshots unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  true,
+                      "label":  "clips unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  true,
+                      "label":  "playerdeaths unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  true,
+                      "label":  "bossdeath unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "servernotifications unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  true,
+                      "label":  "playernotifications unaffected by Weekly Report/Enable"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "Weekly Report/Enable":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "weeklyreport"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "General/EnableAll":  false
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "chat"
+                                             },
+                                    "expect":  false
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "chat"
+                               },
+                      "expect":  false,
+                      "label":  "chat stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "screenshots"
+                               },
+                      "expect":  false,
+                      "label":  "screenshots stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "clips"
+                               },
+                      "expect":  false,
+                      "label":  "clips stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playerdeaths"
+                               },
+                      "expect":  false,
+                      "label":  "playerdeaths stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "bossdeath"
+                               },
+                      "expect":  false,
+                      "label":  "bossdeath stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "servernotifications"
+                               },
+                      "expect":  false,
+                      "label":  "servernotifications stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "playernotifications"
+                               },
+                      "expect":  false,
+                      "label":  "playernotifications stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.featureRunning",
+                      "args":  {
+                                   "id":  "weeklyreport"
+                               },
+                      "expect":  false,
+                      "label":  "weeklyreport stopped by EnableAll"
+                  },
+                  {
+                      "do":  "hook",
+                      "name":  "valheimdiscordrelay.tabRegistered",
+                      "args":  {
+                                   "id":  "settings"
+                               },
+                      "expect":  true,
+                      "label":  "settings tab stays"
+                  },
+                  {
+                      "do":  "setConfig",
+                      "values":  {
+                                     "General/EnableAll":  true
+                                 }
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "chat"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "screenshots"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "clips"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playerdeaths"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "bossdeath"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "servernotifications"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "playernotifications"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  },
+                  {
+                      "do":  "wait",
+                      "until":  {
+                                    "check":  "hook",
+                                    "name":  "valheimdiscordrelay.featureRunning",
+                                    "args":  {
+                                                 "id":  "weeklyreport"
+                                             },
+                                    "expect":  true
+                                },
+                      "timeout":  5
+                  }
+              ],
+    "asserts":  [
+                    {
+                        "check":  "noErrors",
+                        "source":  "ValheimDiscordRelay"
+                    }
+                ]
+}

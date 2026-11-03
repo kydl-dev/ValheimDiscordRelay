@@ -437,6 +437,7 @@ A server (a dedicated server, or a world hosted from the game's menu) lets a pla
 - Turn it off with `[General] Server - Require Same Version = false` (server only, not synced). It applies to the next player who connects.
 - It only restricts who joins *your* server. A player who has this mod can still join other servers that do not have it; a game never becomes strict about the server it connects to.
 - Builds from before this check do not announce their version, so they are refused too.
+- Besides this check the mod declares `[NetworkCompatibility(VersionCheckOnly, Patch)]` for Jotunn: it adds no items or world data, so only the version is compared.
 - The version compared is the mod's own version (`manifest.json` / the DLL). Update the server and the players together.
 - With the check off, only players whose version matches take part in relaying chat, deaths, kills and so on.
 
@@ -505,11 +506,11 @@ Every screenshot, death, boss and report event writes a line to the log (for exa
 
 ## Building from source
 
-- `ValheimDiscordRelay.csproj` (.NET Framework 4.8, C# 10) lists its source files one by one. Game and BepInEx assemblies are expected in `References/`; the embedded video encoder in `WebP/EmbeddedWebP/` is downloaded by the build itself when it is missing (`WebP/prepare-webp.ps1`, official libwebp, SHA-256 checked; this is why the first build needs internet access; `-p:KydlSkipWebP=true` skips it and builds without clip support).
-- `Build/build-release.bat` prepares the encoder and runs MSBuild in Release mode; the DLL ends up in `bin/Release/`.
-- `Tests/` holds an offline harness for the weekly-report statistics, the snapshot encoder / decoder and the save / load code (see `Tests/README.txt`; it needs Mono and a Roslyn `csc`, and is not part of the mod build). `Tests/SamplePayloads/` has sample Discord report messages you can post to a test webhook to see how Discord draws them.
-- `Legacy/` keeps the old IMGUI version of the report window for reference.
-- The quote lists live in `Client/DeathQuotes.cs` and `Server/BossQuotes.cs`; the boss list in `Common/BossCatalog.cs`.
+- Layout: `src/Bootstrap`, `Core`, `Configuration`, `Features/<Feature>`, `Shared`, `Presentation`, `Integrations/Harmony`, `Testing`; tests in `tests/` (unit, integration, TestLab suites). Details: `docs/Architecture.md`.
+- `ValheimDiscordRelay.csproj` (.NET Framework 4.8) takes the shared settings from `Claude\shared\Kydl.Mod.props`; game and BepInEx assemblies come from the shared reference folder. The DLL ends up in `assets/`.
+- The embedded video encoder in `WebP/EmbeddedWebP/` is downloaded by the build itself when it is missing (`WebP/prepare-webp.ps1`, official libwebp, SHA-256 checked; this is why the first build needs internet access; `-p:KydlSkipWebP=true` skips it and builds without clip support).
+- The quote lists live in `src/Features/PlayerDeaths/Infrastructure/DeathQuotes.cs` and `src/Features/BossDeath/Infrastructure/BossQuotes.cs`; the boss list in `src/Features/BossDeath/Domain/BossCatalog.cs`.
+- Tests: `dotnet test tests/Unit`, `dotnet test tests/Integration`; the in-game suites run with DrakesTestLab (`tests/TestLab/suites`).
 - See `CHANGELOG.md` for what changed in each version.
 
 ## Credits and licence

@@ -1,0 +1,50 @@
+<Project>
+  <!--
+    Shared settings for every test project in this folder.
+    * net48 = the runtime family the game's Mono is closest to.
+    * NuGet packages are restored INTO this folder (.nuget\packages), never into the user profile (PROJECT_RULES "Nothing outside the Valheim folder").
+    * Game / BepInEx / Jotunn DLLs come from the central E:\Projects\Valheim\Claude\ref. To test against the installed game instead:
+        dotnet test -p:ValheimRefs="C:\...\Valheim\valheim_Data\Managed"   (and set KYDL_REF_DIR to the same folder)
+    * Lives in ValheimDiscordRelay-Mod\tests (MIGRATION_DECISIONS A1). Run: build the mod first, then  dotnet test "ValheimDiscordRelay-Mod\tests\Unit"  and  dotnet test "ValheimDiscordRelay-Mod\tests\Integration"
+      (release gates only: add the filter TestCategory=ReleaseGate)
+  -->
+  <PropertyGroup>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <IsTestProject>true</IsTestProject>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <RestorePackagesPath>$(MSBuildThisFileDirectory).nuget\packages</RestorePackagesPath>
+    <ValheimRefs Condition="'$(ValheimRefs)' == ''">$(MSBuildThisFileDirectory)..\..\..\Claude\ref</ValheimRefs>
+    <AutomaticallyUseReferenceAssemblyPackages>true</AutomaticallyUseReferenceAssemblyPackages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.0" />
+    <PackageReference Include="NUnit" Version="4.3.2" />
+    <PackageReference Include="NUnit3TestAdapter" Version="5.0.0" />
+    <PackageReference Include="NUnit.Analyzers" Version="4.7.0" />
+    <!-- property-based tests (Claude\testing\TEST_QUALITY.md): FsCheck generates hundreds of inputs per rule and shrinks a failure to the
+         smallest case. Use through Common\Props.cs (Props.Check). 2.16.6 (2.x C# API, runs on net48). -->
+    <PackageReference Include="FsCheck" Version="2.16.6" />
+    <!-- coverage for SonarQube (user 2026-10-28: "coverlet + sonarqube + stryker.net"): XPlat Code Coverage, OpenCover format; _agent\tools\sonar.ps1 -->
+    <PackageReference Include="coverlet.collector" Version="6.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="NUnit.Framework" />
+    <Compile Include="$(MSBuildThisFileDirectory)Common\*.cs" LinkBase="Common" />
+    <!-- Kydl.Core (shared pure contracts, MIGRATION_DECISIONS A9) is linked into every test project: the mod's pure files use it -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Claude\shared\Kydl.Core\**\*.cs" Link="Kydl\Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Reference Include="BepInEx"><HintPath>$(ValheimRefs)\BepInEx.dll</HintPath><Private>true</Private></Reference>
+    <Reference Include="System.Web.Extensions" />
+  </ItemGroup>
+
+  <!-- Test-quality runs only (KydlQuality=true, set by _agent\tools\test-quality.ps1; Claude\testing\TEST_QUALITY.md): the mod project is a
+       reference so Stryker.NET finds the code to mutate. Normal test runs keep using the built DLL in <Mod>-Mod\assets. -->
+  <ItemGroup Condition="'$(KydlQuality)' == 'true'">
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\*.csproj" />
+  </ItemGroup>
+
+</Project>

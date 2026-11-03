@@ -1,0 +1,12 @@
+{
+    "name":  "ValheimDiscordRelay-Manual",
+    "description":  "What needs a person (spec 8.13): the hub look, the real key presses and what arrives in Discord. Skipped in unattended runs - an automated PASS never covers these.",
+    "include":  [
+                    "../ValheimDiscordRelay/suite.json"
+                ],
+    "resetBetweenTests":  true,
+    "tests":  [
+                  "hub-look",
+                  "discord-look"
+              ]
+}
