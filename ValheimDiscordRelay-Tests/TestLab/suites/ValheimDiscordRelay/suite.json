@@ -4,6 +4,7 @@
   "requireMods": [ { "guid": "com.kydldev.ValheimDiscordRelay" } ],
   "configOverrides": [
     { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - Webhook URL", "value": "{{secret:VDR_TEST_WEBHOOK}}?wait=true" },
+    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - HUD Hidden Webhook URL", "value": "" },
     { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - HUD And Player Hidden Webhook URL", "value": "{{secret:VDR_TEST_WEBHOOK}}?wait=false" }
   ],
   "resetBetweenTests": true,
