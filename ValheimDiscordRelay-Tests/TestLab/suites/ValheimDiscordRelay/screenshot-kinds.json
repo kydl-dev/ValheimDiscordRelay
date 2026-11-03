@@ -4,9 +4,9 @@
   "timeout": 60,
   "steps": [
     { "do": "wait", "seconds": 6 },
-    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 0 }, "contains": "/screenshot", "label": "normal -> global" },
-    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 1 }, "contains": "/screenshot", "notContains": "/noplayer", "label": "no HUD, own webhook empty -> global" },
-    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 2 }, "contains": "/noplayer", "label": "no HUD no player -> own webhook" },
+    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 0 }, "contains": "wait=true", "label": "normal -> global" },
+    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 1 }, "contains": "wait=true", "notContains": "wait=false", "label": "no HUD, own webhook empty -> global" },
+    { "do": "hook", "name": "ValheimDiscordRelay.webhookFor", "args": { "mode": 2 }, "contains": "wait=false", "label": "no HUD no player -> own webhook" },
     { "do": "hook", "name": "ValheimDiscordRelay.hubButtons", "expect": 3, "label": "three buttons" },
 
     { "do": "hook", "name": "ValheimDiscordRelay.setKindEnabled", "args": { "mode": 1, "on": 0 }, "expect": 0 },

@@ -1,10 +1,10 @@
 {
   "name": "ValheimDiscordRelay",
-  "description": "ValheimDiscordRelay: starts clean with its one config file, is on by default, its Settings and Screenshots tabs are in the KY hub and the three screenshot kinds work (KydlCore D-084: every mod ships a suite)",
+  "description": "ValheimDiscordRelay: starts clean with its one config file, is on by default, its Settings and Screenshots tabs are in the KY hub and the three screenshot kinds work (KydlCore D-084: every mod ships a suite). Screenshot webhooks = the real test webhook from the runner's local secrets (user 2026-11-03; ?wait=true = global, ?wait=false = no HUD no player), no local receiver needed",
   "requireMods": [ { "guid": "com.kydldev.ValheimDiscordRelay" } ],
   "configOverrides": [
-    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - Webhook URL", "value": "http://127.0.0.1:18771/screenshot" },
-    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - HUD And Player Hidden Webhook URL", "value": "http://127.0.0.1:18771/noplayer" }
+    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - Webhook URL", "value": "{{secret:VDR_TEST_WEBHOOK}}?wait=true" },
+    { "guid": "com.kydldev.ValheimDiscordRelay", "section": "Screenshots", "key": "Server - HUD And Player Hidden Webhook URL", "value": "{{secret:VDR_TEST_WEBHOOK}}?wait=false" }
   ],
   "resetBetweenTests": true,
   "tests": [ "startup-clean", "hub-page", "screenshot-modes", "hub-screenshot-button", "screenshot-kinds" ]
