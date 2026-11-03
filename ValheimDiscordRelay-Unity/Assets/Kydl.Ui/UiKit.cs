@@ -6,7 +6,7 @@ using UnityEngine.UIElements;
 namespace Kydl.Ui
 {
     /// <summary>
-    /// SHARED UI KIT of all the user's mods (E:\Projects\Valheim\Claude\shared\Kydl.Ui). Every mod compiles these files into its own DLL
+    /// SHARED UI KIT of all the user's mods (Kydl.Ui in the shared workspace). Every mod compiles these files into its own DLL
     /// (internal types, so mods never clash), and the Unity project of every mod gets a synced copy for the preview (KydlUiSync).
     /// Change it HERE only; every mod picks the change up on its next build.
     /// One runtime UI Toolkit panel holds every window of the mod (at most 70% of the screen high and 60% wide, movable, the character does
