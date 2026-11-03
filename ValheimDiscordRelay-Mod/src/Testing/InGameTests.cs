@@ -41,8 +41,8 @@ namespace ValheimDiscordRelay.Testing
         /// KydlCore (hard dependency) is loaded: it owns the KY hub (F6) with this mod's Settings tab.
         static string Startup_CoreLoaded()
         {
-            bool loaded = Chainloader.PluginInfos.ContainsKey(KydlCore.Plugin.ModGuid);
-            return loaded ? "PASS: " + KydlCore.Plugin.ModGuid + " is loaded" : "FAIL: " + KydlCore.Plugin.ModGuid + " is not loaded (this mod requires it)";
+            bool loaded = Chainloader.PluginInfos.ContainsKey(KydlCore.Bootstrap.Plugin.ModGuid);
+            return loaded ? "PASS: " + KydlCore.Bootstrap.Plugin.ModGuid + " is loaded" : "FAIL: " + KydlCore.Bootstrap.Plugin.ModGuid + " is not loaded (this mod requires it)";
         }
 
         /// Every "Server - " entry is either synced to the players (ServerSync tag) or admin-only (never sent to players); no "Client - " entry is admin-only.

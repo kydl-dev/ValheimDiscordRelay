@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Kydl.Ui;
+using KydlCore.Ui;
 using UnityEngine;
 using UnityEngine.UIElements;
 

@@ -13,13 +13,13 @@ namespace ValheimDiscordRelay.Tests.Integration
     [TestFixture]
     public class ArchitectureRulesTests
     {
-        static readonly Regex ForbiddenUsing = new Regex(@"^\s*using\s+(UnityEngine|HarmonyLib|BepInEx|Jotunn|Kydl\.Common|KydlCore)\b", RegexOptions.Multiline);
+        static readonly Regex ForbiddenUsing = new Regex(@"^\s*using\s+(UnityEngine|HarmonyLib|BepInEx|Jotunn|KydlCore(?!\.Core\b))\b", RegexOptions.Multiline);
         static readonly Regex ForbiddenType = new Regex(@"\b(GameObject|Component|MonoBehaviour|Transform|Vector3|Quaternion|Character|Humanoid|MonsterAI|BaseAI|ZNetView|ZDO|ZNet|ZNetScene|Player|Time\.time|Physics|ModLog|KyHub)\b");
         static readonly Regex LineComment = new Regex(@"//.*$", RegexOptions.Multiline);
         static readonly Regex StringLiteral = new Regex(@"""([^""\\]|\\.)*""");
 
         static string Src { get { return TestPaths.Src; } }
-        static string SharedCore { get { return Path.GetFullPath(Path.Combine(TestPaths.ProjectRoot, "..", "Claude", "shared", "Kydl.Core")); } }
+        static string SharedCore { get { return Path.GetFullPath(Path.Combine(TestPaths.ProjectRoot, "..", "KydlCore", "KydlCore-Mod", "src", "Shared", "Core")); } }
 
         static IEnumerable<string> PureFiles()
         {
@@ -57,7 +57,7 @@ namespace ValheimDiscordRelay.Tests.Integration
         [Test] public void KydlCoreContracts_ArePure()
         {
             Assert.That(Directory.Exists(SharedCore), Is.True, SharedCore);
-            Assert.That(Violations(Directory.GetFiles(SharedCore, "*.cs", SearchOption.AllDirectories)), Is.Empty, "Claude\\shared\\Kydl.Core must stay pure");
+            Assert.That(Violations(Directory.GetFiles(SharedCore, "*.cs", SearchOption.AllDirectories)), Is.Empty, "KydlCore\\KydlCore-Mod\\src\\Shared\\Core must stay pure");
         }
 
         [Test] public void HarmonyPatches_LiveOnlyIn_IntegrationsHarmony()
@@ -74,7 +74,7 @@ namespace ValheimDiscordRelay.Tests.Integration
             string plugin = File.ReadAllText(Path.Combine(Src, "Bootstrap", "Plugin.cs"));
             string proj = File.ReadAllText(Directory.GetFiles(TestPaths.ModDir, "*.csproj").Single());
             Assert.That(proj, Does.Contain("<KydlUseCore>true</KydlUseCore>"));
-            Assert.That(plugin, Does.Contain("[BepInDependency(KydlCore.Plugin.ModGuid"));
+            Assert.That(plugin, Does.Contain("[BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid"));
             Assert.That(Regex.IsMatch(plugin, @"\[NetworkCompatibility\(CompatibilityLevel\.(EveryoneMustHaveMod|VersionCheckOnly), VersionStrictness\.Patch\)\]"), Is.True,
                 "MIGRATION_DECISIONS: exact versions (Patch); EveryoneMustHaveMod for shared-world mods, VersionCheckOnly for client-only mods");
         }

@@ -4,7 +4,7 @@ using System.IO;
 using BepInEx;
 using HarmonyLib;
 using Jotunn.Utils;
-using Kydl.Common;
+using KydlCore.Common;
 using UnityEngine;
 using ValheimDiscordRelay.Bootstrap;
 using ValheimDiscordRelay.Client;
@@ -20,7 +20,7 @@ namespace ValheimDiscordRelay
     /// </summary>
     [BepInPlugin(ModGuid, ModName, ModVersion)]
     [BepInDependency(Jotunn.Main.ModGuid)]
-    [BepInDependency(KydlCore.Plugin.ModGuid, "0.1.0")]
+    [BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid, "0.1.0")]
     [NetworkCompatibility(CompatibilityLevel.VersionCheckOnly, VersionStrictness.Patch)]
     public sealed class ValheimDiscordRelayPlugin : BaseUnityPlugin
     {

@@ -1,13 +1,13 @@
 using System;
 using System.Collections.Generic;
-using Kydl.Ui;
+using KydlCore.Ui;
 using UnityEngine;
 using UnityEngine.UIElements;
 
 namespace ValheimDiscordRelay.Ui
 {
     /// <summary>
-    /// A row of tabs in the shared Kydl.Ui look (flat buttons, the chosen one gold with a gold underline). Shared through the mod template (Claude\template, from WhipItUp, user 2026-10-27). Root goes into the window; `changed` gets the index of the tab that was picked.
+    /// A row of tabs in the shared KydlCore.Ui look (flat buttons, the chosen one gold with a gold underline). Shared through the mod template (Claude\template, from WhipItUp, user 2026-10-27). Root goes into the window; `changed` gets the index of the tab that was picked.
     /// </summary>
     internal sealed class TabBar
     {

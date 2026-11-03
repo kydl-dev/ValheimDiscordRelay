@@ -5,7 +5,7 @@ using FsCheck;
 namespace ValheimDiscordRelay.Tests.Unit
 {
     /// <summary>
-    /// Shared Kydl.Common.Tunable&lt;T&gt; (dev-only setting KydlTools pushes values into). Documented: with a range the value is always inside it
+    /// Shared KydlCore.Common.Tunable&lt;T&gt; (dev-only setting KydlTools pushes values into). Documented: with a range the value is always inside it
     /// (min / max swapped when given the wrong way round), SettingChanged fires only on a real change, Reset goes back to the fixed value.
     /// </summary>
     [TestFixture]
@@ -27,7 +27,7 @@ namespace ValheimDiscordRelay.Tests.Unit
             public bool Reset() { return (bool)_t.GetMethod("Reset").Invoke(_o, null); }
         }
 
-        static Type IntTunable { get { return ModAssembly.Type("Kydl.Common.Tunable`1").MakeGenericType(typeof(int)); } }
+        static Type IntTunable { get { return ModAssembly.Type("KydlCore.Common.Tunable`1").MakeGenericType(typeof(int)); } }
         static Tun Ranged(int value, int min, int max) { return new Tun(Activator.CreateInstance(IntTunable, "S", "N", value, min, max, "")); }
         static Tun Free(int value) { return new Tun(Activator.CreateInstance(IntTunable, "S", "N", value, "")); }
 

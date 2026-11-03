@@ -1,5 +1,5 @@
 using BepInEx.Configuration;
-using Kydl.Common;
+using KydlCore.Common;
 using ValheimDiscordRelay.Client;
 
 namespace ValheimDiscordRelay.Presentation.Hub.Registration
@@ -13,18 +13,18 @@ namespace ValheimDiscordRelay.Presentation.Hub.Registration
         /// <summary>Registers the mod page (a game client only; a dedicated server has no hub window).</summary>
         internal static bool RegisterModPage(ConfigFile config, ClientCaptureService service)
         {
-            global::KydlCore.KyHub.SetModTitle(ValheimDiscordRelayPlugin.ModGuid, "Valheim Discord Relay");
+            global::KydlCore.Features.Hub.Contracts.KyHub.SetModTitle(ValheimDiscordRelayPlugin.ModGuid, "Valheim Discord Relay");
             ScreenshotHubPage.Register(ValheimDiscordRelayPlugin.ModGuid, config, service);
-            bool registered = global::KydlCore.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
+            bool registered = global::KydlCore.Features.Hub.Contracts.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
             ModLog.Verbose("HubTabs: settings tab " + (registered ? "registered" : "FAILED"));
             return registered;
         }
 
         internal static bool UnregisterModPage()
         {
-            global::KydlCore.KyHub.RemoveTab(ValheimDiscordRelayPlugin.ModGuid, ScreenshotsId);
-            global::KydlCore.KyHub.RemoveTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
-            return !global::KydlCore.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
+            global::KydlCore.Features.Hub.Contracts.KyHub.RemoveTab(ValheimDiscordRelayPlugin.ModGuid, ScreenshotsId);
+            global::KydlCore.Features.Hub.Contracts.KyHub.RemoveTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
+            return !global::KydlCore.Features.Hub.Contracts.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, SettingsId);
         }
     }
 }

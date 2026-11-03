@@ -1,6 +1,6 @@
 ﻿using System;
 using BepInEx.Configuration;
-using Kydl.Common;
+using KydlCore.Common;
 using UnityEngine;
 using ValheimDiscordRelay.Report;
 using ValheimDiscordRelay.Server;

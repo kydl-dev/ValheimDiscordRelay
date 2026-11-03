@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Kydl.Ui
+namespace KydlCore.Ui
 {
     /// <summary>
     /// T-56R (user: "add a scroll bar so we can see all options"; the font / alignment lists showed empty lines): a scroll area made by hand.
@@ -9,11 +9,7 @@ namespace Kydl.Ui
     /// squeezed into the window (the empty lines) and no bar was drawn. Here the content is an absolute child that is never squeezed, moved by
     /// the mouse wheel or the bar on the right (drag the handle or click the track).
     /// </summary>
-#if KYDL_CORE_PUBLIC
     public sealed class UiScroll
-#else
-    internal sealed class UiScroll
-#endif
     {
         const float BarWidth = 8f, WheelStep = 60f, MinThumb = 28f;
 

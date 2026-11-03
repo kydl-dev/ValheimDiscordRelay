@@ -1,6 +1,6 @@
 using System;
 using System.Globalization;
-using Kydl.Ui;
+using KydlCore.Ui;
 using UnityEngine;
 using UnityEngine.UIElements;
 
@@ -165,7 +165,7 @@ namespace ValheimDiscordRelay.Ui
                 Draw("resized");
             }
 
-            // UI points -> screen pixels of the shared panel (scaled from 1080 p by height, Kydl.Ui UiKit).
+            // UI points -> screen pixels of the shared panel (scaled from 1080 p by height, KydlCore.Ui UiKit).
             static float PixelsPerPoint()
             {
                 var s = UiKit.Settings;

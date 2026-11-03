@@ -1,7 +1,6 @@
 using BepInEx.Configuration;
-using Kydl.Common;
-using Kydl.Core.Features;
-using Kydl.Core.Results;
+using KydlCore.Common;
+using KydlCore.Core;
 using ValheimDiscordRelay.Client;
 using ValheimDiscordRelay.Presentation.Hub.Registration;
 

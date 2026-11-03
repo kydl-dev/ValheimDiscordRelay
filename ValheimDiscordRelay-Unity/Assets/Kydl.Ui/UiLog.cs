@@ -1,19 +1,15 @@
 using System;
 
-namespace Kydl.Ui
+namespace KydlCore.Ui
 {
     /// <summary>
     /// The shared UI code (Kydl.Ui) logs through these hooks: in Unity they write to the console, in the game the sinks are set ONCE by the
-    /// code that owns the kit (KydlCore.Plugin.Awake; a mod built with its own copy of the kit points them at its own ModLog).
+    /// code that owns the kit (KydlCore.Bootstrap.Plugin.Awake; a mod built with its own copy of the kit points them at its own ModLog).
     /// <see cref="Owner"/> says WHICH mod the line belongs to while KydlCore draws one mod's tab: KydlCore sets it around the tab's page builder
     /// (<see cref="Within{T}"/>) and every control remembers it for its callbacks (<see cref="Wrap"/>), so a sink can tag the line with the mod
     /// and use that mod's own debug switch. Null = no mod (the kit itself, KydlCore's own pages, Unity).
     /// </summary>
-#if KYDL_CORE_PUBLIC
     public static class UiLog
-#else
-    internal static class UiLog
-#endif
     {
         // Stryker disable once all : the default sink only writes to the Unity console (Unity itself, not reachable from the unit tests)
         public static Action<string> VerboseSink = s => UnityEngine.Debug.Log("[Kydl UI] " + s);

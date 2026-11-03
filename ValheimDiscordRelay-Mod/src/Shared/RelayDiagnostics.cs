@@ -1,5 +1,5 @@
 using System;
-using Kydl.Common;
+using KydlCore.Common;
 
 namespace ValheimDiscordRelay
 {

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using BepInEx.Configuration;
 using HarmonyLib;
-using Kydl.Common;
+using KydlCore.Common;
 
 namespace ValheimDiscordRelay.Server
 {

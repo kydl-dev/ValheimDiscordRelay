@@ -1,4 +1,4 @@
-using Kydl.Ui;
+using KydlCore.Ui;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -8,12 +8,12 @@ namespace ValheimDiscordRelay.Ui
 {
     /// <summary>
     /// Unity-only preview of the mod's menu (NOT compiled into the mod: only Runtime/ is). Add this component to any GameObject of an empty
-    /// scene and press Play: the menu opens in the Game view in the same look as in game (game fonts from Assets/Kydl.Ui/Preview/GameAssets).
+    /// scene and press Play: the menu opens in the Game view in the same look as in game (game fonts from Assets/KydlCore.Ui/Preview/GameAssets).
     /// Set the Game view to 1920x1080 (the panel scales from that like in game).
     /// </summary>
     public sealed class MenuPreview : MonoBehaviour
     {
-        const string FontFolder = "Assets/Kydl.Ui/Preview/GameAssets/";
+        const string FontFolder = "Assets/KydlCore.Ui/Preview/GameAssets/";
 
         void OnEnable()
         {

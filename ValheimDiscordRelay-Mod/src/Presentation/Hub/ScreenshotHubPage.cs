@@ -1,6 +1,7 @@
 ﻿using System;
 using BepInEx.Configuration;
 using KydlCore;
+using KydlCore.Features.Hub.Contracts;
 
 namespace ValheimDiscordRelay.Client
 {

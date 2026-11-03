@@ -4,24 +4,18 @@ using System.Globalization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Kydl.Ui
+namespace KydlCore.Ui
 {
     /// <summary>
     /// T-023 / T-58: the controls of the mod's menus in the FollowPlayer look (UiKit): flat buttons (primary = gold), upper-case section titles,
     /// pill switches, thin sliders with a round handle and a typed number box, drop-downs, text fields, a colour editor. Plain VisualElements
     /// with inline styles (no theme needed). Nothing shrinks (flexShrink 0): the window scrolls instead.
     /// </summary>
-#if KYDL_CORE_PUBLIC
     public static class UiControls
-#else
-    internal static class UiControls
-#endif
     {
         // --- button ---------------------------------------------------------------------------------------------------------
-#if KYDL_CORE_PUBLIC
         const float PressDim = 0.35f;          // share of black mixed in while the button is pressed (D-048)
         const long PressFeedbackMs = 120;      // the dimmed look stays this long after the release, so a quick click is still seen
-#endif
 
         /// A gold (primary) or dark push button; logs every press. The KydlCore build also dims it while it is pressed and draws a thin red border while the pointer is over it (D-048).
         public static Button Button(string text, Action onClick, bool primary = false)
@@ -35,7 +29,6 @@ namespace Kydl.Ui
             b.style.flexShrink = 0;
             b.style.marginLeft = 3; b.style.marginRight = 3; b.style.marginTop = 3; b.style.marginBottom = 3;
             UiKit.Fade(b, "background-color");
-#if KYDL_CORE_PUBLIC
             bool hovered = false, pressed = false;
             Action show = () =>
             {
@@ -46,10 +39,6 @@ namespace Kydl.Ui
             b.RegisterCallback<PointerLeaveEvent>(e => { hovered = false; pressed = false; show(); });
             b.RegisterCallback<PointerDownEvent>(e => { pressed = true; show(); UiLog.Verbose("Ui: button '" + text + "' down, dimmed " + (PressDim * 100f).ToString("0") + "% for at least " + PressFeedbackMs + " ms"); });
             b.RegisterCallback<PointerUpEvent>(e => b.schedule.Execute(() => { pressed = false; show(); }).StartingIn(PressFeedbackMs));
-#else
-            b.RegisterCallback<PointerEnterEvent>(e => b.style.backgroundColor = hot);
-            b.RegisterCallback<PointerLeaveEvent>(e => b.style.backgroundColor = bg);
-#endif
             return b;
         }
 
@@ -72,11 +61,7 @@ namespace Kydl.Ui
         public static VisualElement Heading(string text)
         {
             var s = new VisualElement(); s.style.flexShrink = 0; s.style.marginTop = 16; s.style.marginBottom = 6;
-#if KYDL_CORE_PUBLIC
             var head = UiKit.Label(text, UiKit.SectionSize, UiKit.TabColor, true);
-#else
-            var head = UiKit.Label(text.ToUpperInvariant(), UiKit.SectionSize, UiKit.NameColor, true);
-#endif
             head.style.letterSpacing = 1.5f;
             s.Add(head);
             var line = new VisualElement(); line.style.height = 1; line.style.backgroundColor = UiKit.Border; line.style.marginTop = 4;
@@ -136,6 +121,15 @@ namespace Kydl.Ui
             f.RegisterCallback<FocusOutEvent>(e => UiKit.Borders(input, 1, UiKit.Border));
         }
 
+        /// A pointer / key / panel handler that runs as the mod whose tab or window built the control (UiLog.Owner, D-071 / KydlCore D-086): the "Ui: ..."
+        /// lines it writes carry that mod's tag and follow its debug switch, and controls it rebuilds (colour sliders) keep the owner.
+        static EventCallback<T> Owned<T>(EventCallback<T> handler) where T : EventBase<T>, new()
+        {
+            var owner = UiLog.Owner;
+            // Stryker disable once Boolean : the bool is only the type argument of Within, nobody reads the result
+            return e => UiLog.Within<bool>(owner, () => { handler(e); return true; });
+        }
+
         // --- switch -----------------------------------------------------------------------------------------------------------
         /// A pill switch with its label (FollowPlayer's toggle); click anywhere on it.
         public static VisualElement Toggle(string text, bool on, Action<bool> changed)
@@ -165,13 +159,13 @@ namespace Kydl.Ui
             }
             row.RegisterCallback<PointerEnterEvent>(e => row.style.backgroundColor = UiKit.PanelLight);
             row.RegisterCallback<PointerLeaveEvent>(e => row.style.backgroundColor = Color.clear);
-            row.RegisterCallback<PointerDownEvent>(e =>
+            row.RegisterCallback(Owned<PointerDownEvent>(e =>
             {
                 if (e.button != 0) return;
                 state = !state; Show();
                 UiLog.Verbose("Ui: switch '" + text + "' " + (state ? "on" : "off"));
                 changed?.Invoke(state);
-            });
+            }));
             Show();
             return row;
         }
@@ -224,14 +218,14 @@ namespace Kydl.Ui
             }
             hit.RegisterCallback<PointerDownEvent>(e => { hit.CapturePointer(e.pointerId); FromX(e.localPosition.x); e.StopPropagation(); });
             hit.RegisterCallback<PointerMoveEvent>(e => { if (hit.HasPointerCapture(e.pointerId)) FromX(e.localPosition.x); });
-            hit.RegisterCallback<PointerUpEvent>(e => { if (!hit.HasPointerCapture(e.pointerId)) return; hit.ReleasePointer(e.pointerId); UiLog.Verbose("Ui: slider set to " + v.ToString(format)); });
+            hit.RegisterCallback(Owned<PointerUpEvent>(e => { if (!hit.HasPointerCapture(e.pointerId)) return; hit.ReleasePointer(e.pointerId); UiLog.Verbose("Ui: slider set to " + v.ToString(format)); }));
             input.RegisterCallback<FocusInEvent>(e => editing = true);
-            input.RegisterCallback<FocusOutEvent>(e => { editing = false; Commit(); });
-            input.RegisterCallback<KeyDownEvent>(e =>
+            input.RegisterCallback(Owned<FocusOutEvent>(e => { editing = false; Commit(); }));
+            input.RegisterCallback(Owned<KeyDownEvent>(e =>
             {
                 if (e.keyCode != KeyCode.Return && e.keyCode != KeyCode.KeypadEnter) return;
                 e.StopPropagation(); editing = false; Commit(); input.Blur();
-            });
+            }));
             Show();
             return box;
         }
@@ -273,16 +267,16 @@ namespace Kydl.Ui
                     UiKit.Pad(item, 0, 10); UiKit.Radius(item, 4); UiKit.Fade(item, "background-color");
                     item.RegisterCallback<PointerEnterEvent>(e => item.style.backgroundColor = UiKit.PanelHover);
                     item.RegisterCallback<PointerLeaveEvent>(e => item.style.backgroundColor = Color.clear);
-                    item.RegisterCallback<PointerDownEvent>(e =>
+                    item.RegisterCallback(Owned<PointerDownEvent>(e =>
                     {
                         if (e.button != 0) return;
                         cur = opt; b.text = label(opt) + "  ▾"; shade.RemoveFromHierarchy();
                         UiLog.Verbose("Ui: drop-down chose '" + opt + "'");
                         chosen?.Invoke(opt);
-                    });
+                    }));
                     scroll.Content.Add(item);
                 }
-                shade.RegisterCallback<PointerDownEvent>(e => { if (e.target == shade) { shade.RemoveFromHierarchy(); UiLog.Verbose("Ui: drop-down closed without a choice"); } });
+                shade.RegisterCallback(Owned<PointerDownEvent>(e => { if (e.target == shade) { shade.RemoveFromHierarchy(); UiLog.Verbose("Ui: drop-down closed without a choice"); } }));
                 shade.Add(box);
                 root.Add(shade);
                 openList = shade;
@@ -292,14 +286,14 @@ namespace Kydl.Ui
             });
             // A list is a sibling of the window in UiKit.Root, not a child of it: when the window that owns this field is removed (Escape, X, a game menu
             // took over) the list must go with it, or it stays on screen over the world (user test 2026-10-24, WhipItUp D-077 F-4). Fixed here, for every mod.
-            b.RegisterCallback<DetachFromPanelEvent>(e =>
+            b.RegisterCallback(Owned<DetachFromPanelEvent>(e =>
             {
                 var left = openList;
                 openList = null;
                 if (left == null || left.parent == null) return;
                 left.RemoveFromHierarchy();
                 UiLog.Verbose("Ui: drop-down closed because its field left the panel");
-            });
+            }));
             return b;
         }
 
@@ -347,7 +341,7 @@ namespace Kydl.Ui
                 s.style.backgroundColor = pc; UiKit.Radius(s, 4); UiKit.Borders(s, 1, UiKit.Border);
                 s.RegisterCallback<PointerEnterEvent>(e => UiKit.Borders(s, 2, UiKit.Gold));
                 s.RegisterCallback<PointerLeaveEvent>(e => UiKit.Borders(s, 1, UiKit.Border));
-                s.RegisterCallback<PointerDownEvent>(e => { c = pc; RebuildSliders(); Apply(false); });
+                s.RegisterCallback(Owned<PointerDownEvent>(e => { c = pc; RebuildSliders(); Apply(false); }));
                 pal.Add(s);
             }
             field = TextField("#" + ColorUtility.ToHtmlStringRGB(c), 7, v =>

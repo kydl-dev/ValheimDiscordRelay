@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using BepInEx.Bootstrap;
-using Kydl.Common;
+using KydlCore.Common;
 using ValheimDiscordRelay.Bootstrap;
 
 namespace ValheimDiscordRelay.Testing
@@ -21,7 +21,7 @@ namespace ValheimDiscordRelay.Testing
 
         /// <summary>Is this tab (settings, screenshots) registered in the KY hub right now?</summary>
         [TestHook("valheimdiscordrelay.tabRegistered")]
-        static bool TabRegistered(string id) { return KydlCore.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, id); }
+        static bool TabRegistered(string id) { return KydlCore.Features.Hub.Contracts.KyHub.HasTab(ValheimDiscordRelayPlugin.ModGuid, id); }
         /// <summary>All Startup_* / World_* checks of InGameTests: "PASS: ..." or "FAIL: ...".</summary>
         [TestHook("valheimdiscordrelay.selftest")]
         static string SelfTest() { return TestLabSupport.RunInGameTests(typeof(InGameTests)); }

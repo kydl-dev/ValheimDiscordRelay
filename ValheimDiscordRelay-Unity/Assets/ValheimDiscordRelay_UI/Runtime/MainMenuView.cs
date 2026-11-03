@@ -1,11 +1,11 @@
 using System;
-using Kydl.Ui;
+using KydlCore.Ui;
 using UnityEngine.UIElements;
 
 namespace ValheimDiscordRelay.Ui
 {
     /// <summary>
-    /// WHAT the mod's menu shows (UI Toolkit, shared Kydl.Ui look). Compiled into the mod AND shown by the Unity preview
+    /// WHAT the mod's menu shows (UI Toolkit, shared KydlCore.Ui look). Compiled into the mod AND shown by the Unity preview
     /// (Assets/ValheimDiscordRelay_UI/Preview/MenuPreview.cs: enter Play mode in the Preview scene / any scene with that component).
     /// Keep game types (Player, ZNet, ...) OUT of this folder: the Unity project does not have them. The game side (keys, input lock,
     /// game data) is src/Ui/MainMenu.cs in the mod; pass data in through Build's parameters.

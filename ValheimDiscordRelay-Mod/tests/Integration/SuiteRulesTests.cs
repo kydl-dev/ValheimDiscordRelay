@@ -43,7 +43,7 @@ namespace ValheimDiscordRelay.Tests.Integration
             var core = mods.SingleOrDefault(m => (string)m["guid"] == "com.kydldev.KydlCore");
             Assert.That(core, Is.Not.Null, "requireMods: com.kydldev.KydlCore (hard dependency)");
             var plugin = File.ReadAllText(Path.Combine(TestPaths.Src, "Bootstrap", "Plugin.cs"));
-            var dep = Regex.Match(plugin, @"\[BepInDependency\(\s*KydlCore\.Plugin\.ModGuid\s*,\s*""(?<v>[^""]+)""");
+            var dep = Regex.Match(plugin, @"\[BepInDependency\(\s*KydlCore\.Bootstrap\.Plugin\.ModGuid\s*,\s*""(?<v>[^""]+)""");
             Assert.That(core["minVersion"], Is.EqualTo(dep.Groups["v"].Value), "KydlCore minVersion = the plugin's [BepInDependency] version");
         }
 

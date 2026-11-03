@@ -3,7 +3,7 @@ using UnityEngine;
 using UnityEngine.TextCore.Text;
 using UnityEngine.UIElements;
 
-namespace Kydl.Ui
+namespace KydlCore.Ui
 {
     /// <summary>
     /// SHARED UI KIT of all the user's mods (Kydl.Ui in the shared workspace). Every mod compiles these files into its own DLL
@@ -16,11 +16,7 @@ namespace Kydl.Ui
     /// thin sliders with a typed number box, a slim gold scrollbar. Every font falls back to the game's NotoEmoji font (emoji in any font).
     /// All looks are inline styles: a game build has no USS importer / default theme. The panel scales with the screen height (1080p ref).
     /// </summary>
-#if KYDL_CORE_PUBLIC
     public static class UiKit
-#else
-    internal static class UiKit
-#endif
     {
         // palette (from FollowPlayer's Theme; dim text a little brighter: the user found grey notes hard to read)
         /// <summary>Window / panel background (Panel) and the lighter row and button background (PanelLight).</summary>
@@ -28,45 +24,25 @@ namespace Kydl.Ui
         /// <summary>Hovered row or button background (PanelHover) and the brown line colour of frames and separators (Border).</summary>
         public static readonly Color PanelHover = new(0.190f, 0.145f, 0.098f, 0.96f), Border = new(0.45f, 0.33f, 0.17f, 0.95f);
         /// <summary>The gold accent (values, active parts) and its darker form (primary button, thumbs). KydlCore build: #DAA520 (D-030 / D-032), the others keep the old orange-gold.</summary>
-#if KYDL_CORE_PUBLIC
         public static readonly Color Gold = new(218 / 255f, 165 / 255f, 32 / 255f, 1f), GoldDim = new(157 / 255f, 119 / 255f, 23 / 255f, 1f);
-#else
-        public static readonly Color Gold = new(1.00f, 0.72f, 0.36f, 1f), GoldDim = new(0.72f, 0.52f, 0.26f, 1f);
-#endif
         /// <summary>Normal text and the dimmer text of notes and hints.</summary>
         public static readonly Color Text = new(0.92f, 0.87f, 0.77f, 1f), TextDim = new(0.70f, 0.64f, 0.55f, 1f);
         /// <summary>The very dark background of input fields and slider tracks (Track) and dark text on gold (OnDark).</summary>
         public static readonly Color Track = new(0.03f, 0.025f, 0.02f, 1f), OnDark = new(0.10f, 0.07f, 0.03f, 1f);
         /// <summary>Colour of the NAMES (tabs, mods, settings, section titles) and of the VALUES (numbers, switches, fields) - D-032: a clear split between names and values with few colours. KydlCore build: setting names #FCF5ED (D-048), values = Gold (#DAA520); the others keep Text / Gold as before.</summary>
-#if KYDL_CORE_PUBLIC
         public static readonly Color NameColor = new(252 / 255f, 245 / 255f, 237 / 255f, 1f), ValueColor = Gold;
-#else
-        public static readonly Color NameColor = Text, ValueColor = Gold;
-#endif
         /// <summary>Colour of mod names (the window title, later the hub's mod tabs) and of settings-tab names; also the thin border of a hovered button. KydlCore build: red #DB2121 (D-048); the others keep Gold.</summary>
-#if KYDL_CORE_PUBLIC
         public static readonly Color TabColor = new(219 / 255f, 33 / 255f, 33 / 255f, 1f);
-#else
-        public static readonly Color TabColor = Gold;
-#endif
 
         // sizes (FollowPlayer: 12 - 26; user: "a bit bigger")
-        internal const int TitleSize = 34;
+        public const int TitleSize = 34;
         /// <summary>Text sizes in px at the 1080p reference: section titles, normal text, button text, small text and notes.</summary>
         public const int SectionSize = 24, FontSize = 22, ButtonSize = 21, SmallSize = 18;
         /// <summary>Text size of the NAMES (setting and switch names). KydlCore build: a little bigger than normal text instead of bold (D-043); the others = FontSize.</summary>
-#if KYDL_CORE_PUBLIC
         public const int NameSize = FontSize + 2;
-#else
-        public const int NameSize = FontSize;
-#endif
 
         // window height and top edge in % of the screen (the window is centred up and down); KydlCore build: 80% high (D-048), the others 70%
-#if KYDL_CORE_PUBLIC
         const float WindowHeight = 80f, WindowTop = 10f;
-#else
-        const float WindowHeight = 70f, WindowTop = 15f;
-#endif
 
         /// Who owns this panel (the mod's name: GameObject name and log lines). Set it before the first window (Plugin.Awake); default = the DLL name.
         public static string Owner = typeof(UiKit).Assembly.GetName().Name;
@@ -89,7 +65,7 @@ namespace Kydl.Ui
         }
 
         /// Throws the panel away (the Unity preview rebuilds it in every Play).
-        internal static void Reset()
+        public static void Reset()
         {
             if (_doc != null) Object.DestroyImmediate(_doc.gameObject);
             _doc = null;
@@ -129,7 +105,6 @@ namespace Kydl.Ui
         }
 
         // --- fonts --------------------------------------------------------------------------------------------------------------
-#if KYDL_CORE_PUBLIC
         // KydlCore look (D-043): NotoSansSC-Regular, the font Valheim itself ships, for text AND titles (it has no Bold weight: titles are only bigger).
         // Not loaded (a game update renamed it): any loaded font and ONE warning (D-044). Mods that are not moved to KydlCore keep the old Norse look.
         const string TextFontName = "NotoSansSC-Regular";
@@ -155,23 +130,6 @@ namespace Kydl.Ui
             _titleFont = _bodyFont;
             return MakeAssets(emoji);
         }
-#else
-        static string LoadFonts()
-        {
-            Font emoji = null;
-            foreach (var f in Resources.FindObjectsOfTypeAll<Font>())
-            {
-                if (f == null) continue;
-                string n = f.name;
-                if (n == "Norse") _bodyFont = f;
-                else if (n == "Norsebold") _titleFont = f;
-                else if (n == "NotoEmoji-Regular") emoji = f;
-            }
-            if (_titleFont == null) _titleFont = _bodyFont;
-            if (_bodyFont == null) _bodyFont = _titleFont;
-            return MakeAssets(emoji);
-        }
-#endif
 
         /// Font assets for the chosen text / title fonts, each with the emoji font as fallback; returns a log description.
         static string MakeAssets(Font emoji)
@@ -205,7 +163,7 @@ namespace Kydl.Ui
         }
 
         /// Puts the text font (or the title font) on an element.
-        internal static void Font(VisualElement e, bool title)
+        public static void Font(VisualElement e, bool title)
         {
             var asset = title ? _titleAsset : _bodyAsset;
             var font = title ? _titleFont : _bodyFont;
@@ -276,11 +234,7 @@ namespace Kydl.Ui
             head.style.flexShrink = 0;
             Pad(head, 12, 18);
             head.style.borderBottomWidth = 1; head.style.borderBottomColor = Border;
-#if KYDL_CORE_PUBLIC
             var t = Label(title, TitleSize, TabColor, true);                    // the mod name as written (PascalCase), red (D-048)
-#else
-            var t = Label(title.ToUpperInvariant(), TitleSize, Gold, true);
-#endif
             t.style.letterSpacing = 2f;
             head.Add(t);
             head.Add(UiControls.Button("X", onClose));

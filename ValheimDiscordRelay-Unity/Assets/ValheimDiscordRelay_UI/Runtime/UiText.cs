@@ -3,7 +3,7 @@ using System.Collections.Generic;
 namespace ValheimDiscordRelay.Ui
 {
     /// <summary>
-    /// Player-facing text of the mod, English only (user rule: no other languages). Shared by the game (registered with Jotunn in Plugin.Awake through Kydl.Common.Loc)
+    /// Player-facing text of the mod, English only (user rule: no other languages). Shared by the game (registered with Jotunn in Plugin.Awake through KydlCore.Common.Loc)
     /// and the Unity preview (English). Every key starts with "valheimdiscordrelay_" so it never clashes with another mod.
     /// </summary>
     internal static class UiText

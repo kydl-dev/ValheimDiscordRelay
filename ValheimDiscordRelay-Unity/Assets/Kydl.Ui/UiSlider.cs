@@ -4,18 +4,14 @@ using System.Globalization;
 using UnityEngine;
 using UnityEngine.UIElements;
 
-namespace Kydl.Ui
+namespace KydlCore.Ui
 {
     /// <summary>
     /// SHARED (added 2026-10-26 for ChestDecor). The same thin slider as UiControls.Slider (round handle, typed number box), but as an object
     /// the menu can change later: SetValueWithoutNotify, SetRange (min / max move with the selection), Enabled, and optional clickable MARKS
     /// (dots under the track at fractions 0..1: a click puts the handle there). UiControls.Slider is unchanged for the older menus.
     /// </summary>
-#if KYDL_CORE_PUBLIC
     public sealed class UiSlider
-#else
-    internal sealed class UiSlider
-#endif
     {
         /// <summary>The slider element to add to a parent.</summary>
         public readonly VisualElement Root;

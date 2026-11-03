@@ -36,7 +36,7 @@
     <Using Include="NUnit.Framework" />
     <Compile Include="$(MSBuildThisFileDirectory)Common\*.cs" LinkBase="Common" />
     <!-- Kydl.Core (shared pure contracts, MIGRATION_DECISIONS A9) is linked into every test project: the mod's pure files use it -->
-    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\Claude\shared\Kydl.Core\**\*.cs" Link="Kydl\Core\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\..\KydlCore\KydlCore-Mod\src\Shared\Core\**\*.cs" Link="Kydl\Core\%(RecursiveDir)%(Filename)%(Extension)" />
     <Reference Include="BepInEx"><HintPath>$(ValheimRefs)\BepInEx.dll</HintPath><Private>true</Private></Reference>
     <Reference Include="System.Web.Extensions" />
   </ItemGroup>

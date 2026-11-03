@@ -1,5 +1,5 @@
-using Kydl.Common;
-using Kydl.Core.Features;
+using KydlCore.Common;
+using KydlCore.Core;
 using ValheimDiscordRelay.Client;
 using ValheimDiscordRelay.Report;
 using ValheimDiscordRelay.Server;

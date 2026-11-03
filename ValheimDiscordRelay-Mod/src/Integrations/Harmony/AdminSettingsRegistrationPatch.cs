@@ -1,6 +1,6 @@
 using System;
 using HarmonyLib;
-using Kydl.Common;
+using KydlCore.Common;
 
 namespace ValheimDiscordRelay.Server
 {

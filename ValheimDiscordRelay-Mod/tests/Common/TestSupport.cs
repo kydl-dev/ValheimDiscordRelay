@@ -72,9 +72,18 @@ namespace ValheimDiscordRelay.Tests
             return _asm = Assembly.LoadFrom(TestPaths.ModDll);
         }
 
+        static Assembly _core;
+        static Assembly CoreAsm()
+        {
+            if (_core != null) return _core;
+            foreach (var a in AppDomain.CurrentDomain.GetAssemblies()) if (a.GetName().Name == "KydlCore") return _core = a;
+            return _core = Assembly.LoadFrom(TestPaths.CoreDll);
+        }
+
         public static Type Type(string fullName)
         {
             var t = Load().GetType(fullName, false);
+            if (t == null && fullName.StartsWith("KydlCore.")) t = CoreAsm().GetType(fullName, false);   // shared code lives in KydlCore.dll, not in the mod DLL
             if (t == null) throw new MissingMemberException("Type not found in the mod DLL: " + fullName);
             return t;
         }

@@ -77,10 +77,10 @@ namespace ValheimDiscordRelay.Tests.Integration
             Assert.That(deps.Any(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
         }
 
-        /// The KydlCore version asked for by the plugin attribute: [BepInDependency(KydlCore.Plugin.ModGuid, "x.y.z")] (or the GUID text).
+        /// The KydlCore version asked for by the plugin attribute: [BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid, "x.y.z")] (or the GUID text).
         static string PluginCoreDependencyVersion()
         {
-            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.Src, "Bootstrap", "Plugin.cs")), @"\[BepInDependency\(\s*(KydlCore\.Plugin\.ModGuid|""com\.kydldev\.KydlCore"")\s*,\s*""(\d+\.\d+\.\d+)""");
+            var m = Regex.Match(File.ReadAllText(Path.Combine(TestPaths.Src, "Bootstrap", "Plugin.cs")), @"\[BepInDependency\(\s*(KydlCore\.Bootstrap\.Plugin\.ModGuid|""com\.kydldev\.KydlCore"")\s*,\s*""(\d+\.\d+\.\d+)""");
             return m.Success ? m.Groups[2].Value : null;
         }
 
@@ -88,7 +88,7 @@ namespace ValheimDiscordRelay.Tests.Integration
         public void KydlCore_IsAHardDependency_InPluginAndManifest_WithTheSameVersion()
         {
             var attribute = PluginCoreDependencyVersion();
-            Assert.That(attribute, Is.Not.Null, "Plugin.cs needs [BepInDependency(KydlCore.Plugin.ModGuid, \"x.y.z\")] (hard dependency with a minimum version, every KydlDev mod requires KydlCore)");
+            Assert.That(attribute, Is.Not.Null, "Plugin.cs needs [BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid, \"x.y.z\")] (hard dependency with a minimum version, every KydlDev mod requires KydlCore)");
             var dep = Dependencies().FirstOrDefault(d => d.StartsWith("KydlDev-KydlCore-", StringComparison.Ordinal));
             Assert.That(dep, Is.Not.Null, "manifest.json dependencies need KydlDev-KydlCore-x.y.z");
             Assert.That(dep.Substring("KydlDev-KydlCore-".Length), Is.EqualTo(attribute), "the KydlCore version in manifest.json and in the [BepInDependency] attribute must agree");
