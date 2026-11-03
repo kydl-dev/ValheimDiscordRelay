@@ -1,8 +1,8 @@
 {
     "stryker-config":  {
                            "mutate":  [
-                                          "**/Kydl.Common/ModLog.cs",
-                                          "**/Kydl.Common/Tunable.cs"
+                                          "**/Shared/Common/ModLog.cs",
+                                          "**/Shared/Common/Tunable.cs"
                                       ],
                            "ignore-methods":  [
                                                   "ModLog.Verbose",

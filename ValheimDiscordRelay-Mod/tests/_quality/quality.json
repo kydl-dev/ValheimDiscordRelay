@@ -3,8 +3,8 @@
     "date":  "2026-10-31 19:38:44",
     "hash":  "c7931e806baec57ab0cbf47ddebe2807bd3830098997b3eeeb308b40315dfa6c",
     "files":  [
-                  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\ModLog.cs",
-                  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\Tunable.cs"
+                  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\ModLog.cs",
+                  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\Tunable.cs"
               ],
     "thresholds":  {
                        "coverageMin":  80,
@@ -19,7 +19,7 @@
                      "tests":  "Failed:     0, Passed:    73, Skipped:     0",
                      "files":  [
                                    {
-                                       "file":  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\ModLog.cs",
+                                       "file":  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\ModLog.cs",
                                        "lines":  83,
                                        "covered":  81,
                                        "percent":  97.6,
@@ -29,7 +29,7 @@
                                                        ]
                                    },
                                    {
-                                       "file":  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\Tunable.cs",
+                                       "file":  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\Tunable.cs",
                                        "lines":  43,
                                        "covered":  43,
                                        "percent":  100,
@@ -47,7 +47,7 @@
                      "noCoverage":  11,
                      "files":  [
                                    {
-                                       "file":  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\ModLog.cs",
+                                       "file":  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\ModLog.cs",
                                        "killed":  86,
                                        "timeout":  0,
                                        "survived":  5,
@@ -57,7 +57,7 @@
                                        "score":  84.3
                                    },
                                    {
-                                       "file":  "E:\\Projects\\Valheim\\Claude\\shared\\Kydl.Common\\Tunable.cs",
+                                       "file":  "E:\\Projects\\Valheim\\KydlCore\\KydlCore-Mod\\src\\Shared\\Common\\Tunable.cs",
                                        "killed":  18,
                                        "timeout":  0,
                                        "survived":  0,
