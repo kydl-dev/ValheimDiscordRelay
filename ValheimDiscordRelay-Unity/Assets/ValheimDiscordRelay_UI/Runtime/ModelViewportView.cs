@@ -35,7 +35,7 @@ namespace ValheimDiscordRelay.Ui
                 UiLog.Verbose("ModelViewportView: no 3D scene, showing the title '" + title + "' only");
                 return frame;
             }
-            new Viewport(title, modelId, scene, settings, frame, hint, reset);
+            _ = new Viewport(title, modelId, scene, settings, frame, hint, reset);
             return frame;
         }
 
@@ -89,7 +89,7 @@ namespace ValheimDiscordRelay.Ui
                 _image.RegisterCallback<PointerCaptureOutEvent>(e => EndDrag("capture lost"));
                 frame.RegisterCallback<WheelEvent>(OnWheel);
                 frame.RegisterCallback<GeometryChangedEvent>(e => OnResized(frame));
-                frame.RegisterCallback<DetachFromPanelEvent>(e => Dispose());
+                frame.RegisterCallback<DetachFromPanelEvent>(e => Teardown());
 
                 bool shown = _scene.Show(_modelId);
                 _orbit.Reset();
@@ -188,7 +188,7 @@ namespace ValheimDiscordRelay.Ui
                 if (why != null) UiLog.Verbose("ModelViewportView: drawn after " + why + " (" + _orbit + ")" + (done ? "" : " - scene did not render"));
             }
 
-            void Dispose()
+            void Teardown()
             {
                 _image.image = null;
                 _scene.Dispose();

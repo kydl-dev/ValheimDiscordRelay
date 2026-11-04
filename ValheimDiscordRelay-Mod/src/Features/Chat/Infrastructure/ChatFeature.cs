@@ -4,32 +4,31 @@ using ValheimDiscordRelay.Client;
 using ValheimDiscordRelay.Report;
 using ValheimDiscordRelay.Server;
 
-namespace ValheimDiscordRelay
+namespace ValheimDiscordRelay;
+
+/// <summary>The chat relay (game chat to the Discord chat webhooks). Gate: EnableAll and [Chat] Enable. The code that does the work reads the gate itself; this class carries the switch state for the FeatureRegistry.</summary>
+internal sealed class ChatFeature : IFeature
 {
-    /// <summary>The chat relay (game chat to the Discord chat webhooks). Gate: EnableAll and [Chat] Enable. The code that does the work reads the gate itself; this class carries the switch state for the FeatureRegistry.</summary>
-    internal sealed class ChatFeature : IFeature
+    internal const string FeatureId = "chat";
+
+    /// <summary>True between Start and Stop.</summary>
+    internal static bool Running { get; private set; }
+
+    public string Id { get { return FeatureId; } }
+
+    public bool IsEnabled() { return Functions.IsOn(ModSettings.On, ServerConfig.Enabled != null && ServerConfig.Enabled.Value); }
+
+    public bool Start()
     {
-        internal const string FeatureId = "chat";
+        Running = true;
+        ModLog.Verbose("ChatFeature: started");
+        return Running;
+    }
 
-        /// <summary>True between Start and Stop.</summary>
-        internal static bool Running { get; private set; }
-
-        public string Id { get { return FeatureId; } }
-
-        public bool IsEnabled() { return Functions.IsOn(ModSettings.On, ServerConfig.Enabled != null && ServerConfig.Enabled.Value); }
-
-        public bool Start()
-        {
-            Running = true;
-            ModLog.Verbose("ChatFeature: started");
-            return Running;
-        }
-
-        public bool Stop()
-        {
-            Running = false;
-            ModLog.Verbose("ChatFeature: stopped");
-            return !Running;
-        }
+    public bool Stop()
+    {
+        Running = false;
+        ModLog.Verbose("ChatFeature: stopped");
+        return !Running;
     }
 }

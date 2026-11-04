@@ -1,33 +1,32 @@
 using System.Threading;
 
-namespace ValheimDiscordRelay.Client
+namespace ValheimDiscordRelay.Client;
+
+/// <summary>
+/// Synchronously latches session teardown so death detection cannot race Player destruction.
+/// </summary>
+internal static class SessionLifecycle
 {
-    /// <summary>
-    /// Synchronously latches session teardown so death detection cannot race Player destruction.
-    /// </summary>
-    internal static class SessionLifecycle
+    private static int _tearingDown;
+
+    internal static bool IsTearingDown
     {
-        private static int _tearingDown;
+        get { return Volatile.Read(ref _tearingDown) != 0; }
+    }
 
-        internal static bool IsTearingDown
+    internal static void MarkTearingDown(string reason)
+    {
+        if (Interlocked.Exchange(ref _tearingDown, 1) == 0)
         {
-            get { return Volatile.Read(ref _tearingDown) != 0; }
+            RelayDiagnostics.Debug(
+                "[DeathVideo] Session teardown detected (" + reason +
+                "); suppressing death detection.");
         }
+    }
 
-        internal static void MarkTearingDown(string reason)
-        {
-            if (Interlocked.Exchange(ref _tearingDown, 1) == 0)
-            {
-                RelayDiagnostics.Debug(
-                    "[DeathVideo] Session teardown detected (" + reason +
-                    "); suppressing death detection.");
-            }
-        }
-
-        internal static void ResetForNewSession()
-        {
-            if (Interlocked.Exchange(ref _tearingDown, 0) != 0)
-                RelayDiagnostics.Debug("[DeathVideo] New local-player session detected; death detection re-enabled.");
-        }
+    internal static void ResetForNewSession()
+    {
+        if (Interlocked.Exchange(ref _tearingDown, 0) != 0)
+            RelayDiagnostics.Debug("[DeathVideo] New local-player session detected; death detection re-enabled.");
     }
 }

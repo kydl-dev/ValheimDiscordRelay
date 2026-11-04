@@ -1,22 +1,22 @@
-namespace ValheimDiscordRelay.Report
-{
-    /// <summary>
-    /// The "Modern" look of the in-game report window ([Weekly Report] Client - Window Style = Modern), as style sheet text.
-    ///
-    /// It works exactly like the classic one (see ReportDefaultStyle): this text is applied first, and the player's own
-    /// BepInEx/config/ValheimDiscordRelay.report.modern.uss is read on top of it each time the window opens. The layout (the
-    /// heights of rows, tiles and tabs) is the same as in Classic, so only colours, corners, borders and fonts differ here.
-    /// The window itself adds a few decorations in this style only: the round icon in the title bar, the diamond on the line
-    /// under the title, and the key hints in the footer (classes vdr-badge, vdr-badge-bar, vdr-diamond, vdr-key, vdr-key-text).
-    ///
-    /// Fonts: Valheim's Norse (rune) font for the title and the footer buttons only. Everything else stays on the window's
-    /// default font, because player names can contain characters the game's own fonts do not have.
-    /// </summary>
-    internal static class ReportModernStyle
-    {
-        internal const string FileName = "ValheimDiscordRelay.report.modern.uss";
+namespace ValheimDiscordRelay.Report;
 
-        internal const string Text = @"
+/// <summary>
+/// The "Modern" look of the in-game report window ([Weekly Report] Client - Window Style = Modern), as style sheet text.
+///
+/// It works exactly like the classic one (see ReportDefaultStyle): this text is applied first, and the player's own
+/// BepInEx/config/ValheimDiscordRelay.report.modern.uss is read on top of it each time the window opens. The layout (the
+/// heights of rows, tiles and tabs) is the same as in Classic, so only colours, corners, borders and fonts differ here.
+/// The window itself adds a few decorations in this style only: the round icon in the title bar, the diamond on the line
+/// under the title, and the key hints in the footer (classes vdr-badge, vdr-badge-bar, vdr-diamond, vdr-key, vdr-key-text).
+///
+/// Fonts: Valheim's Norse (rune) font for the title and the footer buttons only. Everything else stays on the window's
+/// default font, because player names can contain characters the game's own fonts do not have.
+/// </summary>
+internal static class ReportModernStyle
+{
+    internal const string FileName = "ValheimDiscordRelay.report.modern.uss";
+
+    internal const string Text = @"
 :root {
     --vdr-panel: rgba(24, 19, 15, 0.98);
     --vdr-band: #1F1812;
@@ -366,7 +366,7 @@ namespace ValheimDiscordRelay.Report
 */
 ";
 
-        internal const string FileHeader = @"/*
+    internal const string FileHeader = @"/*
   Valheim Discord Relay - style sheet of the in-game weekly report window, MODERN style
   ([Weekly Report] Client - Window Style = Modern).
 
@@ -392,10 +392,9 @@ namespace ValheimDiscordRelay.Report
 
 ";
 
-        /// <summary>What is written to the config folder the first time: the explanation, then the default rules.</summary>
-        internal static string FileText
-        {
-            get { return FileHeader + Text.TrimStart(); }
-        }
+    /// <summary>What is written to the config folder the first time: the explanation, then the default rules.</summary>
+    internal static string FileText
+    {
+        get { return FileHeader + Text.TrimStart(); }
     }
 }

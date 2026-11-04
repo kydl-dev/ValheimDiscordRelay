@@ -1,20 +1,20 @@
-namespace ValheimDiscordRelay.Report
-{
-    /// <summary>
-    /// The look of the in-game report window, as style sheet text (see ReportStyleSheet for what is supported).
-    ///
-    /// <see cref="Text"/> is always applied first. The same text, with an explanation on top, is written once to
-    /// BepInEx/config/ValheimDiscordRelay.report.uss; that file is read after the built-in rules, so anything in it wins,
-    /// and it is read again each time the window opens (edit, close the window, press the key again).
-    ///
-    /// Sizes that decide the layout (the heights of rows, tiles and tabs, the window's minimum size) are fixed in the code;
-    /// colours, fonts, text alignment, padding and borders are meant to be changed here.
-    /// </summary>
-    internal static class ReportDefaultStyle
-    {
-        internal const string FileName = "ValheimDiscordRelay.report.uss";
+namespace ValheimDiscordRelay.Report;
 
-        internal const string FileHeader = @"/*
+/// <summary>
+/// The look of the in-game report window, as style sheet text (see ReportStyleSheet for what is supported).
+///
+/// <see cref="Text"/> is always applied first. The same text, with an explanation on top, is written once to
+/// BepInEx/config/ValheimDiscordRelay.report.uss; that file is read after the built-in rules, so anything in it wins,
+/// and it is read again each time the window opens (edit, close the window, press the key again).
+///
+/// Sizes that decide the layout (the heights of rows, tiles and tabs, the window's minimum size) are fixed in the code;
+/// colours, fonts, text alignment, padding and borders are meant to be changed here.
+/// </summary>
+internal static class ReportDefaultStyle
+{
+    internal const string FileName = "ValheimDiscordRelay.report.uss";
+
+    internal const string FileHeader = @"/*
   Valheim Discord Relay - style sheet of the in-game weekly report window.
 
   This file is read when the window opens (so: edit, close the window, open it again - no game restart needed).
@@ -39,7 +39,7 @@ namespace ValheimDiscordRelay.Report
 
 ";
 
-        internal const string Text = @"
+    internal const string Text = @"
 :root {
     --vdr-panel: rgba(19, 16, 13, 0.97);
     --vdr-tile: #221D17;
@@ -296,30 +296,29 @@ namespace ValheimDiscordRelay.Report
 }
 ";
 
-        /// <summary>What is written to the config folder the first time: the explanation, then the default rules.</summary>
-        internal static string FileText
-        {
-            get { return FileHeader + Text.TrimStart(); }
-        }
+    /// <summary>What is written to the config folder the first time: the explanation, then the default rules.</summary>
+    internal static string FileText
+    {
+        get { return FileHeader + Text.TrimStart(); }
+    }
 
-        // ---------------------------------------------------------------- the two styles
+    // ---------------------------------------------------------------- the two styles
 
-        /// <summary>The built-in rules of a style (always applied first).</summary>
-        internal static string BuiltInText(ReportWindowStyle style)
-        {
-            return style == ReportWindowStyle.Modern ? ReportModernStyle.Text : Text;
-        }
+    /// <summary>The built-in rules of a style (always applied first).</summary>
+    internal static string BuiltInText(ReportWindowStyle style)
+    {
+        return style == ReportWindowStyle.Modern ? ReportModernStyle.Text : Text;
+    }
 
-        /// <summary>The player's style sheet file of a style, in the BepInEx config folder.</summary>
-        internal static string FileNameFor(ReportWindowStyle style)
-        {
-            return style == ReportWindowStyle.Modern ? ReportModernStyle.FileName : FileName;
-        }
+    /// <summary>The player's style sheet file of a style, in the BepInEx config folder.</summary>
+    internal static string FileNameFor(ReportWindowStyle style)
+    {
+        return style == ReportWindowStyle.Modern ? ReportModernStyle.FileName : FileName;
+    }
 
-        /// <summary>The text written to that file the first time (explanation, then the built-in rules).</summary>
-        internal static string FileTextFor(ReportWindowStyle style)
-        {
-            return style == ReportWindowStyle.Modern ? ReportModernStyle.FileText : FileText;
-        }
+    /// <summary>The text written to that file the first time (explanation, then the built-in rules).</summary>
+    internal static string FileTextFor(ReportWindowStyle style)
+    {
+        return style == ReportWindowStyle.Modern ? ReportModernStyle.FileText : FileText;
     }
 }

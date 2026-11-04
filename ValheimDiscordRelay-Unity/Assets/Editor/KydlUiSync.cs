@@ -1,9 +1,9 @@
-// Editor-only. Keeps Assets/KydlCore.Ui an exact copy of the shared UI kit of all the user's mods
+// Editor-only. Keeps Assets/Kydl.Ui an exact copy of the shared UI kit of all the user's mods
 // (the shared KydlCore.Ui folder), so the Unity preview shows the same look the mod gets when it is built
-// (the mod compiles the shared files directly from Claude\shared).
+// (the mod gets the same code through KydlCore.dll).
 //
 //  * Runs when the Editor loads / recompiles and from the menu "Kydl > Sync shared UI kit".
-//  * Copies only files that differ, never deletes anything else in the project. Change the kit in Claude\shared, never in Assets/KydlCore.Ui.
+//  * Copies only files that differ, never deletes anything else in the project. Change the kit in KydlCore (KydlCore-Mod\src\Shared\Ui), never in Assets/Kydl.Ui.
 using System.IO;
 using UnityEditor;
 using UnityEngine;
@@ -14,8 +14,8 @@ namespace ValheimDiscordRelay.EditorTools
     public static class KydlUiSync
     {
         // <Main>/<Project>-Unity -> <Main> -> the projects root -> shared KydlCore.Ui
-        private const string SharedRelative = "../../Claude/shared/KydlCore.Ui";
-        private const string TargetRelative = "Assets/KydlCore.Ui";
+        private const string SharedRelative = "../../KydlCore/KydlCore-Mod/src/Shared/Ui";
+        private const string TargetRelative = "Assets/Kydl.Ui";
 
         static KydlUiSync()
         {

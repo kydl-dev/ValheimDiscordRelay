@@ -4,446 +4,445 @@ using System.IO;
 using System.Reflection;
 using ValheimDiscordRelay.Report;
 
-namespace ValheimDiscordRelay.Server
+namespace ValheimDiscordRelay.Server;
+
+/// <summary>
+/// Server-side relay orchestration: RPC registration, chat relay and lifecycle notifications.
+/// (Join/leave messages are in PlayerNotifications, the weekly report in the Report folder.)
+/// </summary>
+internal static class ServerRelay
 {
+    private static ZRoutedRpc _registeredRpc;
+    private static WebhookWorker _worker;
+    private static bool _serverActive;
+    private static string _restartMarkerPath;
+
     /// <summary>
-    /// Server-side relay orchestration: RPC registration, chat relay and lifecycle notifications.
-    /// (Join/leave messages are in PlayerNotifications, the weekly report in the Report folder.)
+    /// The longest the game's main thread waits, at server shutdown, for the queued messages (including the "going down"
+    /// notice) to reach Discord (see NotifyServerLifecycle). Startup never waits.
     /// </summary>
-    internal static class ServerRelay
+    private const int ShutdownFlushTimeoutMs = 2000;
+
+    /// <summary>
+    /// The longest the plugin's teardown keeps sending what is still queued before the process ends (see Shutdown).
+    /// </summary>
+    private const int ShutdownDrainTimeoutMs = 4000;
+
+    /// <summary>
+    /// Called once from the plugin Awake(), after ModSettings.Bind().
+    /// </summary>
+    internal static void Initialize()
     {
-        private static ZRoutedRpc _registeredRpc;
-        private static WebhookWorker _worker;
-        private static bool _serverActive;
-        private static string _restartMarkerPath;
+        _restartMarkerPath = Path.Combine(BepInEx.Paths.CachePath, "ValheimDiscordRelay.clean-shutdown");
 
-        /// <summary>
-        /// The longest the game's main thread waits, at server shutdown, for the queued messages (including the "going down"
-        /// notice) to reach Discord (see NotifyServerLifecycle). Startup never waits.
-        /// </summary>
-        private const int ShutdownFlushTimeoutMs = 2000;
+        ServerConfig.Enabled.SettingChanged += OnRelaySettingChanged;
+        ServerConfig.ServerNotificationsEnabled.SettingChanged += OnRelaySettingChanged;
+        BossConfig.Enabled.SettingChanged += OnRelaySettingChanged;
+        PlayerNotificationConfig.Enabled.SettingChanged += OnRelaySettingChanged;
+        ReportConfig.Enabled.SettingChanged += OnRelaySettingChanged;
+        ModSettings.EnableAll.SettingChanged += OnRelaySettingChanged;
+    }
 
-        /// <summary>
-        /// The longest the plugin's teardown keeps sending what is still queued before the process ends (see Shutdown).
-        /// </summary>
-        private const int ShutdownDrainTimeoutMs = 4000;
+    /// <summary>
+    /// Called once from the plugin OnDestroy().
+    /// </summary>
+    internal static void Shutdown()
+    {
+        if (ServerConfig.Enabled != null)
+            ServerConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
+        if (ServerConfig.ServerNotificationsEnabled != null)
+            ServerConfig.ServerNotificationsEnabled.SettingChanged -= OnRelaySettingChanged;
+        if (BossConfig.Enabled != null)
+            BossConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
+        if (PlayerNotificationConfig.Enabled != null)
+            PlayerNotificationConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
+        if (ReportConfig.Enabled != null)
+            ReportConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
+        if (ModSettings.EnableAll != null)
+            ModSettings.EnableAll.SettingChanged -= OnRelaySettingChanged;
 
-        /// <summary>
-        /// Called once from the plugin Awake(), after ModSettings.Bind().
-        /// </summary>
-        internal static void Initialize()
+        // Send what is still queued (bounded) instead of throwing it away: the process is about to end.
+        WebhookWorker worker = _worker;
+        if (worker != null)
+            worker.Stop(ShutdownDrainTimeoutMs);
+
+        _worker = null;
+        _registeredRpc = null;
+        _serverActive = false;
+        ChatRateLimiter.Reset();
+    }
+
+    private static void OnRelaySettingChanged(object sender, EventArgs args)
+    {
+        RegisterRpc();
+    }
+
+    internal static void RegisterRpc()
+    {
+        if (ZNet.instance == null || !ZNet.instance.IsServer())
+            return;
+
+        if (_worker == null && (ServerConfig.ChatOn ||
+                                ServerConfig.ServerNotificationsOn ||
+                                BossConfig.On ||
+                                PlayerNotificationConfig.On ||
+                                ReportConfig.On))
         {
-            _restartMarkerPath = Path.Combine(BepInEx.Paths.CachePath, "ValheimDiscordRelay.clean-shutdown");
-
-            ServerConfig.Enabled.SettingChanged += OnRelaySettingChanged;
-            ServerConfig.ServerNotificationsEnabled.SettingChanged += OnRelaySettingChanged;
-            BossConfig.Enabled.SettingChanged += OnRelaySettingChanged;
-            PlayerNotificationConfig.Enabled.SettingChanged += OnRelaySettingChanged;
-            ReportConfig.Enabled.SettingChanged += OnRelaySettingChanged;
-            ModSettings.EnableAll.SettingChanged += OnRelaySettingChanged;
+            _worker = new WebhookWorker();
+            _worker.Start();
+            _serverActive = true;
         }
 
-        /// <summary>
-        /// Called once from the plugin OnDestroy().
-        /// </summary>
-        internal static void Shutdown()
+        if (ZRoutedRpc.instance == null)
+            return;
+
+        if (_registeredRpc == ZRoutedRpc.instance)
+            return;
+
+        ZRoutedRpc.instance.Register<ZPackage>(RelayProtocol.RpcName, new Action<long, ZPackage>(OnClientChat));
+        RelayDiagnostics.Info("Registered RPC " + RelayProtocol.RpcName);
+        BossAnnouncer.Register(ZRoutedRpc.instance);
+        ReportRpc.Register(ZRoutedRpc.instance);
+
+        _registeredRpc = ZRoutedRpc.instance;
+    }
+
+    /// <summary>
+    /// True once the webhook worker is running, i.e. messages can be queued.
+    /// </summary>
+    internal static bool IsActive
+    {
+        get { return _worker != null && _serverActive; }
+    }
+
+    /// <summary>
+    /// Queues a ready-made webhook JSON payload (used for embeds such as boss deaths, and for messages that carry
+    /// their own avatar such as the player join/leave notifications).
+    /// </summary>
+    /// <param name="webhookUrl">The Discord webhook URL to post to.</param>
+    /// <param name="payloadJson">The complete JSON body.</param>
+    /// <param name="label">Short description for log lines.</param>
+    /// <param name="onComplete">Optional. Called once with true when Discord accepted the payload, false when it could not be delivered (on another thread).</param>
+    /// <param name="exemptFromLimit">True for a message the queue limit must not drop (the weekly report's parts); see WebhookWorker.EnqueueJson.</param>
+    /// <returns>True if the payload was queued; false if the worker is not running or no webhook was given.</returns>
+    internal static bool EnqueueJson(string webhookUrl, string payloadJson, string label, Action<bool> onComplete = null, bool exemptFromLimit = false)
+    {
+        WebhookWorker worker = _worker;
+        if (worker == null || !_serverActive)
         {
-            if (ServerConfig.Enabled != null)
-                ServerConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
-            if (ServerConfig.ServerNotificationsEnabled != null)
-                ServerConfig.ServerNotificationsEnabled.SettingChanged -= OnRelaySettingChanged;
-            if (BossConfig.Enabled != null)
-                BossConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
-            if (PlayerNotificationConfig.Enabled != null)
-                PlayerNotificationConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
-            if (ReportConfig.Enabled != null)
-                ReportConfig.Enabled.SettingChanged -= OnRelaySettingChanged;
-            if (ModSettings.EnableAll != null)
-                ModSettings.EnableAll.SettingChanged -= OnRelaySettingChanged;
-
-            // Send what is still queued (bounded) instead of throwing it away: the process is about to end.
-            WebhookWorker worker = _worker;
-            if (worker != null)
-                worker.Stop(ShutdownDrainTimeoutMs);
-
-            _worker = null;
-            _registeredRpc = null;
-            _serverActive = false;
-            ChatRateLimiter.Reset();
+            RelayDiagnostics.Warning("Webhook worker is not running; " + label + " was not sent.");
+            return false;
         }
 
-        private static void OnRelaySettingChanged(object sender, EventArgs args)
-        {
-            RegisterRpc();
-        }
+        return worker.EnqueueJson(webhookUrl, payloadJson, label, onComplete, exemptFromLimit);
+    }
 
-        internal static void RegisterRpc()
+    private static void OnClientChat(long sender, ZPackage package)
+    {
+        if (!ServerConfig.ChatOn)
+            return;
+
+        try
         {
             if (ZNet.instance == null || !ZNet.instance.IsServer())
                 return;
 
-            if (_worker == null && (ServerConfig.ChatOn ||
-                                    ServerConfig.ServerNotificationsOn ||
-                                    BossConfig.On ||
-                                    PlayerNotificationConfig.On ||
-                                    ReportConfig.On))
+            ZNetPeer peer = ZNet.instance.GetPeer(sender);
+            if (peer == null)
             {
-                _worker = new WebhookWorker();
-                _worker.Start();
-                _serverActive = true;
+                RelayDiagnostics.Warning("Rejected chat relay from unknown peer " + sender + ".");
+                return;
             }
 
-            if (ZRoutedRpc.instance == null)
+            // One player cannot flood the queue and push everybody else's messages out of it.
+            if (!ChatRateLimiter.Allow(sender, peer.m_playerName))
                 return;
 
-            if (_registeredRpc == ZRoutedRpc.instance)
+            int version = package.ReadInt();
+            if (version != RelayProtocol.ProtocolVersion)
+            {
+                RelayDiagnostics.Warning("Rejected chat relay from " + sender + ": unsupported protocol " + version + ".");
+                return;
+            }
+
+            int rawType = package.ReadInt();
+            if (rawType != (int)Talker.Type.Normal && rawType != (int)Talker.Type.Shout)
+            {
+                RelayDiagnostics.Warning("Rejected chat relay from " + sender + ": unsupported Talker.Type " + rawType + ".");
+                return;
+            }
+
+            string text = RelayProtocol.ReadSafeString(package, RelayProtocol.MaxTextChars);
+            if (string.IsNullOrWhiteSpace(text))
                 return;
 
-            ZRoutedRpc.instance.Register<ZPackage>(RelayProtocol.RpcName, new Action<long, ZPackage>(OnClientChat));
-            RelayDiagnostics.Info("Registered RPC " + RelayProtocol.RpcName);
-            BossAnnouncer.Register(ZRoutedRpc.instance);
-            ReportRpc.Register(ZRoutedRpc.instance);
+            string playerName = peer.m_playerName;
+            string platformId = GetPlatformId(peer);
 
-            _registeredRpc = ZRoutedRpc.instance;
+            QueueChat((Talker.Type)rawType, text, playerName, platformId);
         }
-
-        /// <summary>
-        /// True once the webhook worker is running, i.e. messages can be queued.
-        /// </summary>
-        internal static bool IsActive
+        catch (Exception ex)
         {
-            get { return _worker != null && _serverActive; }
+            RelayDiagnostics.Error("Failed to process incoming chat relay.", ex);
         }
-
-        /// <summary>
-        /// Queues a ready-made webhook JSON payload (used for embeds such as boss deaths, and for messages that carry
-        /// their own avatar such as the player join/leave notifications).
-        /// </summary>
-        /// <param name="webhookUrl">The Discord webhook URL to post to.</param>
-        /// <param name="payloadJson">The complete JSON body.</param>
-        /// <param name="label">Short description for log lines.</param>
-        /// <param name="onComplete">Optional. Called once with true when Discord accepted the payload, false when it could not be delivered (on another thread).</param>
-        /// <param name="exemptFromLimit">True for a message the queue limit must not drop (the weekly report's parts); see WebhookWorker.EnqueueJson.</param>
-        /// <returns>True if the payload was queued; false if the worker is not running or no webhook was given.</returns>
-        internal static bool EnqueueJson(string webhookUrl, string payloadJson, string label, Action<bool> onComplete = null, bool exemptFromLimit = false)
-        {
-            WebhookWorker worker = _worker;
-            if (worker == null || !_serverActive)
-            {
-                RelayDiagnostics.Warning("Webhook worker is not running; " + label + " was not sent.");
-                return false;
-            }
-
-            return worker.EnqueueJson(webhookUrl, payloadJson, label, onComplete, exemptFromLimit);
-        }
-
-        private static void OnClientChat(long sender, ZPackage package)
-        {
-            if (!ServerConfig.ChatOn)
-                return;
-
-            try
-            {
-                if (ZNet.instance == null || !ZNet.instance.IsServer())
-                    return;
-
-                ZNetPeer peer = ZNet.instance.GetPeer(sender);
-                if (peer == null)
-                {
-                    RelayDiagnostics.Warning("Rejected chat relay from unknown peer " + sender + ".");
-                    return;
-                }
-
-                // One player cannot flood the queue and push everybody else's messages out of it.
-                if (!ChatRateLimiter.Allow(sender, peer.m_playerName))
-                    return;
-
-                int version = package.ReadInt();
-                if (version != RelayProtocol.ProtocolVersion)
-                {
-                    RelayDiagnostics.Warning("Rejected chat relay from " + sender + ": unsupported protocol " + version + ".");
-                    return;
-                }
-
-                int rawType = package.ReadInt();
-                if (rawType != (int)Talker.Type.Normal && rawType != (int)Talker.Type.Shout)
-                {
-                    RelayDiagnostics.Warning("Rejected chat relay from " + sender + ": unsupported Talker.Type " + rawType + ".");
-                    return;
-                }
-
-                string text = RelayProtocol.ReadSafeString(package, RelayProtocol.MaxTextChars);
-                if (string.IsNullOrWhiteSpace(text))
-                    return;
-
-                string playerName = peer.m_playerName;
-                string platformId = GetPlatformId(peer);
-
-                QueueChat((Talker.Type)rawType, text, playerName, platformId);
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Error("Failed to process incoming chat relay.", ex);
-            }
-        }
-
-
-        /// <summary>
-        /// Relays a chat message typed by the local player when this game IS the server (a world hosted from
-        /// Valheim's own menu). There is no server peer to send an RPC to in that case, and the host is not in the
-        /// peer list, so ChatSendTextPatch hands the message here directly instead.
-        /// </summary>
-        /// <param name="type">The chat message's talker type.</param>
-        /// <param name="text">The chat message text.</param>
-        internal static void RelayHostChat(Talker.Type type, string text)
-        {
-            if (!ServerConfig.ChatOn)
-                return;
-
-            try
-            {
-                if (ZNet.instance == null || !ZNet.instance.IsServer())
-                    return;
-
-                if (type != Talker.Type.Normal && type != Talker.Type.Shout)
-                    return;
-
-                if (string.IsNullOrWhiteSpace(text))
-                    return;
-
-                string playerName = null;
-                if (Player.m_localPlayer != null)
-                    playerName = Player.m_localPlayer.GetPlayerName();
-
-                // The host has no network peer, so there is no platform ID to read; "host" is used for the
-                // [xxxx] suffix / duplicate-name numbering.
-                QueueChat(type, text, playerName, "host");
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Error("Failed to relay the host's chat message.", ex);
-            }
-        }
-
-        /// <summary>
-        /// Builds the Discord message for one chat line and queues it on the webhook worker. Shared by the
-        /// RPC path (other players) and the host path (the local player on a game-hosted world).
-        /// </summary>
-        private static void QueueChat(Talker.Type type, string text, string playerName, string platformId)
-        {
-            if (text.Length > ServerConfig.MaxMessageLength.Value)
-                text = text.Substring(0, ServerConfig.MaxMessageLength.Value);
-
-            if (string.IsNullOrWhiteSpace(playerName))
-                playerName = "Unknown Player";
-
-            string characterKey = playerName + "|" + platformId;
-
-            RelayMessage message = new RelayMessage
-            {
-                Type = type,
-                Text = text,
-                PlayerName = playerName,
-                PlatformId = platformId,
-                CharacterKey = characterKey
-            };
-
-            string username = RelayUsernames.BuildDiscordUsername(message);
-            string content = DiscordFormatting.BuildContent(
-                message,
-                ServerConfig.ShoutAnsi.Value,
-                ServerConfig.NormalAnsi.Value,
-                ServerConfig.MaxMessageLength.Value);
-
-            string webhookUrl = message.Type == Talker.Type.Shout
-                ? GetWebhookUrl(ServerConfig.ShoutWebhookUrl.Value)
-                : GetWebhookUrl(ServerConfig.NormalWebhookUrl.Value);
-
-            if (_worker != null && _serverActive)
-                _worker.Enqueue(webhookUrl, username, content);
-        }
-
-        /// <summary>
-        /// Queues a server Up/Restart/Down notification like every other message, so it keeps its place in line (the
-        /// "going down" notice arrives after the messages queued before it). Starting never waits for Discord. At shutdown
-        /// the queue is given a short, bounded time to empty, because the process is about to exit; a slow or unreachable
-        /// Discord therefore delays a shutdown by at most <see cref="ShutdownFlushTimeoutMs"/>, and anything still unsent
-        /// is tried again for a few more seconds when the plugin is torn down (see Shutdown).
-        /// </summary>
-        /// <param name="eventName">One of "up", "restart" or "down".</param>
-        internal static void NotifyServerLifecycle(string eventName)
-        {
-            if (!ServerConfig.ServerNotificationsOn || _worker == null || !_serverActive)
-                return;
-
-            string url = ServerConfig.ServerNotificationsWebhookUrl.Value;
-            if (string.IsNullOrWhiteSpace(url))
-                return;
-
-            // The server name is always bold (markdown characters inside the name are escaped so they cannot break the bold).
-            string boldName = BoldServerName(GetServerDisplayName());
-
-            bool enabled;
-            string message;
-            if (eventName == "restart")
-            {
-                enabled = ServerConfig.ServerRestartNotification.Value;
-                message = "Server " + boldName + " restarted.";
-            }
-            else if (eventName == "down")
-            {
-                enabled = ServerConfig.ServerDownNotification.Value;
-                message = "Server " + boldName + " is going down.";
-            }
-            else
-            {
-                enabled = ServerConfig.ServerUpNotification.Value;
-                message = "Server " + boldName + " is up.";
-            }
-
-            if (!enabled)
-                return;
-
-            // null username = Discord uses the name set on the webhook itself.
-            string username = ServerConfig.UseDiscordWebhookName.Value
-                ? null
-                : ServerConfig.ServerNotificationsWebhookName;
-
-            _worker.EnqueueJson(
-                url,
-                DiscordFormatting.BuildWebhookJson(username, message),
-                "server notification (" + eventName + ")");
-
-            if (eventName == "down")
-            {
-                if (!_worker.WaitUntilIdle(ShutdownFlushTimeoutMs))
-                    RelayDiagnostics.Warning("Discord did not take all queued messages within " + ShutdownFlushTimeoutMs + " ms of the shutdown notice; they are retried while the plugin shuts down.");
-            }
-        }
-
-        /// <summary>
-        /// The server name as bold Discord markdown, for use inside a message.
-        /// </summary>
-        internal static string BoldServerName(string serverName)
-        {
-            return "**" + BossCatalog.EscapeDiscordMarkdown(serverName) + "**";
-        }
-
-        /// <summary>
-        /// Reads the dedicated server's configured display name via reflection.
-        /// </summary>
-        /// <returns>The server's display name, or a generic fallback if unavailable.</returns>
-        internal static string GetServerDisplayName()
-        {
-            try
-            {
-                FieldInfo field = typeof(ZNet).GetField(
-                    "m_ServerName",
-                    BindingFlags.Static | BindingFlags.NonPublic);
-
-                string name = field != null ? field.GetValue(null) as string : null;
-                if (!string.IsNullOrWhiteSpace(name))
-                    return RelayUsernames.SanitizeUsername(name.Trim());
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Warning("Could not read server name: " + ex.Message);
-            }
-
-            return "Valheim Server";
-        }
-
-        /// <summary>
-        /// Consumes the clean-shutdown marker and reports whether the current startup is a restart, i.e.
-        /// the marker exists AND the shutdown it records happened within the configured restart window.
-        /// An older marker (server stayed off for a while) counts as a normal startup.
-        /// </summary>
-        /// <returns>True if this startup should be announced as a restart.</returns>
-        internal static bool ConsumeCleanShutdownMarker()
-        {
-            try
-            {
-                if (string.IsNullOrWhiteSpace(_restartMarkerPath) || !File.Exists(_restartMarkerPath))
-                    return false;
-
-                string text = null;
-                try
-                {
-                    text = File.ReadAllText(_restartMarkerPath);
-                }
-                finally
-                {
-                    File.Delete(_restartMarkerPath);
-                }
-
-                DateTime shutdownUtc;
-                if (!DateTime.TryParse(
-                        text == null ? null : text.Trim(),
-                        System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.AssumeUniversal |
-                        System.Globalization.DateTimeStyles.AdjustToUniversal,
-                        out shutdownUtc))
-                {
-                    RelayDiagnostics.Warning("Clean-shutdown marker had no readable timestamp; reporting a normal startup.");
-                    return false;
-                }
-
-                double downSeconds = (DateTime.UtcNow - shutdownUtc).TotalSeconds;
-                int windowSeconds = ServerConfig.ServerRestartWindowSeconds.Value;
-                bool isRestart = downSeconds >= 0 && downSeconds <= windowSeconds;
-
-                RelayDiagnostics.Info(
-                    "Server startup " + downSeconds.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) +
-                    "s after last clean shutdown (restart window " + windowSeconds + "s): " +
-                    (isRestart ? "restart" : "normal startup") + ".");
-
-                return isRestart;
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Warning("Could not inspect clean-shutdown marker: " + ex.Message);
-                return false;
-            }
-        }
-
-        internal static void WriteCleanShutdownMarker()
-        {
-            try
-            {
-                if (!string.IsNullOrWhiteSpace(_restartMarkerPath))
-                    File.WriteAllText(_restartMarkerPath, DateTime.UtcNow.ToString("O"));
-            }
-            catch (Exception ex)
-            {
-                RelayDiagnostics.Warning("Could not write clean-shutdown marker: " + ex.Message);
-            }
-        }
-
-        internal static string GetPlatformId(ZNetPeer peer)
-        {
-            try
-            {
-                if (peer != null && peer.m_socket != null)
-                {
-                    string hostName = peer.m_socket.GetHostName();
-                    if (!string.IsNullOrWhiteSpace(hostName))
-                        return hostName.Trim();
-                }
-            }
-            catch
-            {
-            }
-
-            return peer != null ? peer.m_uid.ToString() : "unknown";
-        }
-
-        private static string GetWebhookUrl(string specificWebhook)
-        {
-            if (!string.IsNullOrWhiteSpace(specificWebhook))
-                return specificWebhook.Trim();
-
-            return ServerConfig.WebhookUrl.Value != null ? ServerConfig.WebhookUrl.Value.Trim() : string.Empty;
-        }
-
     }
+
+
+    /// <summary>
+    /// Relays a chat message typed by the local player when this game IS the server (a world hosted from
+    /// Valheim's own menu). There is no server peer to send an RPC to in that case, and the host is not in the
+    /// peer list, so ChatSendTextPatch hands the message here directly instead.
+    /// </summary>
+    /// <param name="type">The chat message's talker type.</param>
+    /// <param name="text">The chat message text.</param>
+    internal static void RelayHostChat(Talker.Type type, string text)
+    {
+        if (!ServerConfig.ChatOn)
+            return;
+
+        try
+        {
+            if (ZNet.instance == null || !ZNet.instance.IsServer())
+                return;
+
+            if (type != Talker.Type.Normal && type != Talker.Type.Shout)
+                return;
+
+            if (string.IsNullOrWhiteSpace(text))
+                return;
+
+            string playerName = null;
+            if (Player.m_localPlayer != null)
+                playerName = Player.m_localPlayer.GetPlayerName();
+
+            // The host has no network peer, so there is no platform ID to read; "host" is used for the
+            // [xxxx] suffix / duplicate-name numbering.
+            QueueChat(type, text, playerName, "host");
+        }
+        catch (Exception ex)
+        {
+            RelayDiagnostics.Error("Failed to relay the host's chat message.", ex);
+        }
+    }
+
+    /// <summary>
+    /// Builds the Discord message for one chat line and queues it on the webhook worker. Shared by the
+    /// RPC path (other players) and the host path (the local player on a game-hosted world).
+    /// </summary>
+    private static void QueueChat(Talker.Type type, string text, string playerName, string platformId)
+    {
+        if (text.Length > ServerConfig.MaxMessageLength.Value)
+            text = text.Substring(0, ServerConfig.MaxMessageLength.Value);
+
+        if (string.IsNullOrWhiteSpace(playerName))
+            playerName = "Unknown Player";
+
+        string characterKey = playerName + "|" + platformId;
+
+        RelayMessage message = new RelayMessage
+        {
+            Type = type,
+            Text = text,
+            PlayerName = playerName,
+            PlatformId = platformId,
+            CharacterKey = characterKey
+        };
+
+        string username = RelayUsernames.BuildDiscordUsername(message);
+        string content = DiscordFormatting.BuildContent(
+            message,
+            ServerConfig.ShoutAnsi.Value,
+            ServerConfig.NormalAnsi.Value,
+            ServerConfig.MaxMessageLength.Value);
+
+        string webhookUrl = message.Type == Talker.Type.Shout
+            ? GetWebhookUrl(ServerConfig.ShoutWebhookUrl.Value)
+            : GetWebhookUrl(ServerConfig.NormalWebhookUrl.Value);
+
+        if (_worker != null && _serverActive)
+            _worker.Enqueue(webhookUrl, username, content);
+    }
+
+    /// <summary>
+    /// Queues a server Up/Restart/Down notification like every other message, so it keeps its place in line (the
+    /// "going down" notice arrives after the messages queued before it). Starting never waits for Discord. At shutdown
+    /// the queue is given a short, bounded time to empty, because the process is about to exit; a slow or unreachable
+    /// Discord therefore delays a shutdown by at most <see cref="ShutdownFlushTimeoutMs"/>, and anything still unsent
+    /// is tried again for a few more seconds when the plugin is torn down (see Shutdown).
+    /// </summary>
+    /// <param name="eventName">One of "up", "restart" or "down".</param>
+    internal static void NotifyServerLifecycle(string eventName)
+    {
+        if (!ServerConfig.ServerNotificationsOn || _worker == null || !_serverActive)
+            return;
+
+        string url = ServerConfig.ServerNotificationsWebhookUrl.Value;
+        if (string.IsNullOrWhiteSpace(url))
+            return;
+
+        // The server name is always bold (markdown characters inside the name are escaped so they cannot break the bold).
+        string boldName = BoldServerName(GetServerDisplayName());
+
+        bool enabled;
+        string message;
+        if (eventName == "restart")
+        {
+            enabled = ServerConfig.ServerRestartNotification.Value;
+            message = "Server " + boldName + " restarted.";
+        }
+        else if (eventName == "down")
+        {
+            enabled = ServerConfig.ServerDownNotification.Value;
+            message = "Server " + boldName + " is going down.";
+        }
+        else
+        {
+            enabled = ServerConfig.ServerUpNotification.Value;
+            message = "Server " + boldName + " is up.";
+        }
+
+        if (!enabled)
+            return;
+
+        // null username = Discord uses the name set on the webhook itself.
+        string username = ServerConfig.UseDiscordWebhookName.Value
+            ? null
+            : ServerConfig.ServerNotificationsWebhookName;
+
+        _worker.EnqueueJson(
+            url,
+            DiscordFormatting.BuildWebhookJson(username, message),
+            "server notification (" + eventName + ")");
+
+        if (eventName == "down")
+        {
+            if (!_worker.WaitUntilIdle(ShutdownFlushTimeoutMs))
+                RelayDiagnostics.Warning("Discord did not take all queued messages within " + ShutdownFlushTimeoutMs + " ms of the shutdown notice; they are retried while the plugin shuts down.");
+        }
+    }
+
+    /// <summary>
+    /// The server name as bold Discord markdown, for use inside a message.
+    /// </summary>
+    internal static string BoldServerName(string serverName)
+    {
+        return "**" + BossCatalog.EscapeDiscordMarkdown(serverName) + "**";
+    }
+
+    /// <summary>
+    /// Reads the dedicated server's configured display name via reflection.
+    /// </summary>
+    /// <returns>The server's display name, or a generic fallback if unavailable.</returns>
+    internal static string GetServerDisplayName()
+    {
+        try
+        {
+            FieldInfo field = typeof(ZNet).GetField(
+                "m_ServerName",
+                BindingFlags.Static | BindingFlags.NonPublic);
+
+            string name = field != null ? field.GetValue(null) as string : null;
+            if (!string.IsNullOrWhiteSpace(name))
+                return RelayUsernames.SanitizeUsername(name.Trim());
+        }
+        catch (Exception ex)
+        {
+            RelayDiagnostics.Warning("Could not read server name: " + ex.Message);
+        }
+
+        return "Valheim Server";
+    }
+
+    /// <summary>
+    /// Consumes the clean-shutdown marker and reports whether the current startup is a restart, i.e.
+    /// the marker exists AND the shutdown it records happened within the configured restart window.
+    /// An older marker (server stayed off for a while) counts as a normal startup.
+    /// </summary>
+    /// <returns>True if this startup should be announced as a restart.</returns>
+    internal static bool ConsumeCleanShutdownMarker()
+    {
+        try
+        {
+            if (string.IsNullOrWhiteSpace(_restartMarkerPath) || !File.Exists(_restartMarkerPath))
+                return false;
+
+            string text = null;
+            try
+            {
+                text = File.ReadAllText(_restartMarkerPath);
+            }
+            finally
+            {
+                File.Delete(_restartMarkerPath);
+            }
+
+            DateTime shutdownUtc;
+            if (!DateTime.TryParse(
+                    text == null ? null : text.Trim(),
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.AssumeUniversal |
+                    System.Globalization.DateTimeStyles.AdjustToUniversal,
+                    out shutdownUtc))
+            {
+                RelayDiagnostics.Warning("Clean-shutdown marker had no readable timestamp; reporting a normal startup.");
+                return false;
+            }
+
+            double downSeconds = (DateTime.UtcNow - shutdownUtc).TotalSeconds;
+            int windowSeconds = ServerConfig.ServerRestartWindowSeconds.Value;
+            bool isRestart = downSeconds >= 0 && downSeconds <= windowSeconds;
+
+            RelayDiagnostics.Info(
+                "Server startup " + downSeconds.ToString("F0", System.Globalization.CultureInfo.InvariantCulture) +
+                "s after last clean shutdown (restart window " + windowSeconds + "s): " +
+                (isRestart ? "restart" : "normal startup") + ".");
+
+            return isRestart;
+        }
+        catch (Exception ex)
+        {
+            RelayDiagnostics.Warning("Could not inspect clean-shutdown marker: " + ex.Message);
+            return false;
+        }
+    }
+
+    internal static void WriteCleanShutdownMarker()
+    {
+        try
+        {
+            if (!string.IsNullOrWhiteSpace(_restartMarkerPath))
+                File.WriteAllText(_restartMarkerPath, DateTime.UtcNow.ToString("O"));
+        }
+        catch (Exception ex)
+        {
+            RelayDiagnostics.Warning("Could not write clean-shutdown marker: " + ex.Message);
+        }
+    }
+
+    internal static string GetPlatformId(ZNetPeer peer)
+    {
+        try
+        {
+            if (peer != null && peer.m_socket != null)
+            {
+                string hostName = peer.m_socket.GetHostName();
+                if (!string.IsNullOrWhiteSpace(hostName))
+                    return hostName.Trim();
+            }
+        }
+        catch
+        {
+        }
+
+        return peer != null ? peer.m_uid.ToString() : "unknown";
+    }
+
+    private static string GetWebhookUrl(string specificWebhook)
+    {
+        if (!string.IsNullOrWhiteSpace(specificWebhook))
+            return specificWebhook.Trim();
+
+        return ServerConfig.WebhookUrl.Value != null ? ServerConfig.WebhookUrl.Value.Trim() : string.Empty;
+    }
+
 }
