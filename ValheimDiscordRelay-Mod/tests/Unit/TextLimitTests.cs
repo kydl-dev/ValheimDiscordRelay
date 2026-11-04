@@ -29,7 +29,7 @@ public class TextLimitTests
         string cut = TextLimit.WithEllipsis("abcdefgh", 5);
 
         Assert.That(cut, Is.EqualTo("abcd\u2026"));
-        Assert.That(cut.Length, Is.EqualTo(5));
+        Assert.That(cut, Has.Length.EqualTo(5));
     }
 
     [Test]

@@ -168,8 +168,11 @@ public class ReportDeathCauseTests
             IDictionary byMob = (IDictionary)Get(p, "DeathsByMob");
             IDictionary causes = (IDictionary)Get(p, "DeathCauses");
             string name = (string)Get(p, "Name");
-            Assert.That(byMob.Contains("Greydwarf Brute"), Is.EqualTo(causes.Contains("Greydwarf Brute")), name);
-            Assert.That(causes.Contains("Greydwarf Elite"), Is.False, name + ": no 'Greydwarf Elite' split");
+            using (Assert.EnterMultipleScope())
+            {
+                Assert.That(byMob.Contains("Greydwarf Brute"), Is.EqualTo(causes.Contains("Greydwarf Brute")), name);
+                Assert.That(causes.Contains("Greydwarf Elite"), Is.False, name + ": no 'Greydwarf Elite' split");
+            }
         }
     }
 
@@ -189,15 +192,23 @@ public class ReportDeathCauseTests
     }
 
     // ---- 4. snapshot -> wire -> window data
-    [Test] public void WindowData_DecodesWithDeathCauseDetails() { Assert.That(_windowData, Is.Not.Null); Assert.That((bool)Get(_windowData, "HasDeathCauseDetails"), Is.True); }
+    [Test] public void WindowData_DecodesWithDeathCauseDetails() {
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(_windowData, Is.Not.Null); Assert.That((bool)Get(_windowData, "HasDeathCauseDetails"), Is.True);
+        }
+    }
 
     [Test]
     public void ServerTroll_FinishingHit_Is120Blunt()
     {
         object hit = ((IDictionary)Get(_windowData, "DeathCauseHits"))["Troll"];
 
-        Assert.That(Math.Round(Convert.ToDouble(Get(hit, "Damage"))), Is.EqualTo(120));
-        Assert.That(Get(hit, "Type"), Is.EqualTo("Blunt"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(Math.Round(Convert.ToDouble(Get(hit, "Damage"))), Is.EqualTo(120));
+            Assert.That(Get(hit, "Type"), Is.EqualTo("Blunt"));
+        }
     }
 
     [Test]
@@ -219,7 +230,10 @@ public class ReportDeathCauseTests
     {
         object hit = ((IDictionary)Get(_windowData, "DeathCauseHits"))["Lava"];
 
-        Assert.That(Get(hit, "Type"), Is.EqualTo("Fire"));
-        Assert.That(Math.Round(Convert.ToDouble(Get(hit, "Damage"))), Is.EqualTo(40));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(Get(hit, "Type"), Is.EqualTo("Fire"));
+            Assert.That(Math.Round(Convert.ToDouble(Get(hit, "Damage"))), Is.EqualTo(40));
+        }
     }
 }

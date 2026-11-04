@@ -50,14 +50,20 @@ public class ArchitectureRulesTests
 
     [Test] public void PureLayers_ReferenceNoGameOrEngine()
     {
-        Assert.That(PureFiles(), Is.Not.Empty, "src/Features/<F>/{Domain,Application,Execution}");
-        Assert.That(Violations(PureFiles()), Is.Empty, "the domain decides without the game - move game reads into the feature's Infrastructure adapter");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(PureFiles(), Is.Not.Empty, "src/Features/<F>/{Domain,Application,Execution}");
+            Assert.That(Violations(PureFiles()), Is.Empty, "the domain decides without the game - move game reads into the feature's Infrastructure adapter");
+        }
     }
 
     [Test] public void KydlCoreContracts_ArePure()
     {
-        Assert.That(Directory.Exists(SharedCore), Is.True, SharedCore);
-        Assert.That(Violations(Directory.GetFiles(SharedCore, "*.cs", SearchOption.AllDirectories)), Is.Empty, "KydlCore\\KydlCore-Mod\\src\\Shared\\Core must stay pure");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(Directory.Exists(SharedCore), Is.True, SharedCore);
+            Assert.That(Violations(Directory.GetFiles(SharedCore, "*.cs", SearchOption.AllDirectories)), Is.Empty, "KydlCore\\KydlCore-Mod\\src\\Shared\\Core must stay pure");
+        }
     }
 
     [Test] public void HarmonyPatches_LiveOnlyIn_IntegrationsHarmony()
@@ -73,10 +79,13 @@ public class ArchitectureRulesTests
     {
         string plugin = File.ReadAllText(Path.Combine(Src, "Bootstrap", "Plugin.cs"));
         string proj = File.ReadAllText(Directory.GetFiles(TestPaths.ModDir, "*.csproj").Single());
-        Assert.That(proj, Does.Not.Contain("KydlUseCore"), "the shared code lives in KydlCore.dll; the old build switch is gone");
-        Assert.That(plugin, Does.Contain("[BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid"));
-        Assert.That(Regex.IsMatch(plugin, @"\[NetworkCompatibility\(CompatibilityLevel\.(EveryoneMustHaveMod|VersionCheckOnly), VersionStrictness\.Patch\)\]"), Is.True,
-            "MIGRATION_DECISIONS: exact versions (Patch); EveryoneMustHaveMod for shared-world mods, VersionCheckOnly for client-only mods");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(proj, Does.Not.Contain("KydlUseCore"), "the shared code lives in KydlCore.dll; the old build switch is gone");
+            Assert.That(plugin, Does.Contain("[BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid"));
+            Assert.That(Regex.IsMatch(plugin, @"\[NetworkCompatibility\(CompatibilityLevel\.(EveryoneMustHaveMod|VersionCheckOnly), VersionStrictness\.Patch\)\]"), Is.True,
+                "MIGRATION_DECISIONS: exact versions (Patch); EveryoneMustHaveMod for shared-world mods, VersionCheckOnly for client-only mods");
+        }
     }
 
     [Test] public void EveryFeature_HasAnAdapterImplementingIFeature()

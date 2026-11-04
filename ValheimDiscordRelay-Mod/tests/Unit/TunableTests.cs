@@ -38,8 +38,11 @@ public class TunableTests
     {
         var t = Ranged(50, 0, 10);
 
-        Assert.That(t.Value, Is.EqualTo(10));
-        Assert.That(t.Default, Is.EqualTo(10));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(t.Value, Is.EqualTo(10));
+            Assert.That(t.Default, Is.EqualTo(10));
+        }
     }
 
     [Test]
@@ -70,16 +73,22 @@ public class TunableTests
 
         var back = IntTunable.GetMethod("SetFromConfigOf").Invoke(o, new object[] { "OtherMod" });
 
-        Assert.That(back, Is.SameAs(o));
-        Assert.That(IntTunable.GetProperty("External").GetValue(o), Is.True);
-        Assert.That(o.ToString(), Is.EqualTo("Sec.Name = 3"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(back, Is.SameAs(o));
+            Assert.That(IntTunable.GetProperty("External").GetValue(o), Is.True);
+            Assert.That(o.ToString(), Is.EqualTo("Sec.Name = 3"));
+        }
     }
 
     [Test]
     public void Description_NullBecomesEmpty_OtherwiseKept()
     {
-        Assert.That(IntTunable.GetProperty("Description").GetValue(Activator.CreateInstance(IntTunable, "S", "N", 1, null)), Is.EqualTo(""));
-        Assert.That(IntTunable.GetProperty("Description").GetValue(Activator.CreateInstance(IntTunable, "S", "N", 1, "what it does")), Is.EqualTo("what it does"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(IntTunable.GetProperty("Description").GetValue(Activator.CreateInstance(IntTunable, "S", "N", 1, null)), Is.EqualTo(""));
+            Assert.That(IntTunable.GetProperty("Description").GetValue(Activator.CreateInstance(IntTunable, "S", "N", 1, "what it does")), Is.EqualTo("what it does"));
+        }
     }
 
     [Test]

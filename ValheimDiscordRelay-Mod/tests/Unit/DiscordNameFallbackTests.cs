@@ -11,9 +11,12 @@ public class DiscordNameFallbackTests
     {
         bool ok = DiscordNameFallback.TryBuild("Discord Dave", "hello", out string name, out string content);
 
-        Assert.That(ok, Is.True);
-        Assert.That(name, Is.EqualTo("Valheim Player"));
-        Assert.That(content, Is.EqualTo("**Discord Dave:** hello"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ok, Is.True);
+            Assert.That(name, Is.EqualTo("Valheim Player"));
+            Assert.That(content, Is.EqualTo("**Discord Dave:** hello"));
+        }
     }
 
     [Test]
@@ -29,8 +32,11 @@ public class DiscordNameFallbackTests
     {
         bool ok = DiscordNameFallback.TryBuild("Clyde", null, out _, out string content);
 
-        Assert.That(ok, Is.True);
-        Assert.That(content, Is.EqualTo("**Clyde:** "));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ok, Is.True);
+            Assert.That(content, Is.EqualTo("**Clyde:** "));
+        }
     }
 
     [TestCase(null)]
@@ -41,9 +47,12 @@ public class DiscordNameFallbackTests
     {
         bool ok = DiscordNameFallback.TryBuild(username, "hello", out string name, out string content);
 
-        Assert.That(ok, Is.False);
-        Assert.That(name, Is.EqualTo("Valheim Player"));
-        Assert.That(content, Is.EqualTo("hello"));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ok, Is.False);
+            Assert.That(name, Is.EqualTo("Valheim Player"));
+            Assert.That(content, Is.EqualTo("hello"));
+        }
     }
 
     [Test]
@@ -51,7 +60,7 @@ public class DiscordNameFallbackTests
     {
         DiscordNameFallback.TryBuild("Clyde", new string('x', 3000), out _, out string content);
 
-        Assert.That(content.Length, Is.EqualTo(2000));
+        Assert.That(content, Has.Length.EqualTo(2000));
         Assert.That(content, Does.StartWith("**Clyde:** x"));
         Assert.That(content, Does.EndWith("\u2026"));
     }
@@ -62,7 +71,7 @@ public class DiscordNameFallbackTests
         string body = new string('x', 2000 - "**Clyde:** ".Length);
         DiscordNameFallback.TryBuild("Clyde", body, out _, out string content);
 
-        Assert.That(content.Length, Is.EqualTo(2000));
+        Assert.That(content, Has.Length.EqualTo(2000));
         Assert.That(content, Does.EndWith("x"));
     }
 }

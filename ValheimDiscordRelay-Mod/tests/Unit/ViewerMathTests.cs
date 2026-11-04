@@ -45,8 +45,11 @@ public class ViewerMathTests
     [Test]
     public void FitDistance_BadInput_GivesAPositiveDistance()
     {
-        Assert.That(ViewerMath.FitDistance(float.NaN, -1f, 0f, 0f, float.NaN, float.NaN), Is.GreaterThan(0f));
-        Assert.That(ViewerMath.FitDistance(1f, 1f, 1f, 30f, 0f, 0f), Is.GreaterThan(0f));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ViewerMath.FitDistance(float.NaN, -1f, 0f, 0f, float.NaN, float.NaN), Is.GreaterThan(0f));
+            Assert.That(ViewerMath.FitDistance(1f, 1f, 1f, 30f, 0f, 0f), Is.GreaterThan(0f));
+        }
     }
 
     [TestCase(10f, 80f, 10f)]
@@ -72,27 +75,36 @@ public class ViewerMathTests
     [Test]
     public void StepZoom_MultipliesAndClamps()
     {
-        Assert.That(ViewerMath.StepZoom(1f, 1f, 1.2f, 0.5f, 8f), Is.EqualTo(1.2f).Within(Eps));
-        Assert.That(ViewerMath.StepZoom(1f, -1f, 1.2f, 0.5f, 8f), Is.EqualTo(1f / 1.2f).Within(Eps));
-        Assert.That(ViewerMath.StepZoom(7f, 3f, 1.2f, 0.5f, 8f), Is.EqualTo(8f).Within(Eps));
-        Assert.That(ViewerMath.StepZoom(0.6f, -5f, 1.2f, 0.5f, 8f), Is.EqualTo(0.5f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ViewerMath.StepZoom(1f, 1f, 1.2f, 0.5f, 8f), Is.EqualTo(1.2f).Within(Eps));
+            Assert.That(ViewerMath.StepZoom(1f, -1f, 1.2f, 0.5f, 8f), Is.EqualTo(1f / 1.2f).Within(Eps));
+            Assert.That(ViewerMath.StepZoom(7f, 3f, 1.2f, 0.5f, 8f), Is.EqualTo(8f).Within(Eps));
+            Assert.That(ViewerMath.StepZoom(0.6f, -5f, 1.2f, 0.5f, 8f), Is.EqualTo(0.5f).Within(Eps));
+        }
     }
 
     [Test]
     public void Orbit_YawZeroPitchZero_IsInFrontOnMinusZ()
     {
         ViewerMath.Orbit(0f, 0f, 2f, out float x, out float y, out float z);
-        Assert.That(x, Is.EqualTo(0f).Within(Eps));
-        Assert.That(y, Is.EqualTo(0f).Within(Eps));
-        Assert.That(z, Is.EqualTo(-2f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(x, Is.EqualTo(0f).Within(Eps));
+            Assert.That(y, Is.EqualTo(0f).Within(Eps));
+            Assert.That(z, Is.EqualTo(-2f).Within(Eps));
+        }
     }
 
     [Test]
     public void Orbit_KeepsTheDistance_AndPitchUpIsAbove()
     {
         ViewerMath.Orbit(37f, 25f, 3f, out float x, out float y, out float z);
-        Assert.That(Math.Sqrt(x * x + y * y + z * z), Is.EqualTo(3.0).Within(Eps));
-        Assert.That(y, Is.GreaterThan(0f));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(Math.Sqrt(x * x + y * y + z * z), Is.EqualTo(3.0).Within(Eps));
+            Assert.That(y, Is.GreaterThan(0f));
+        }
     }
 
     [Test]
@@ -102,10 +114,13 @@ public class ViewerMathTests
         var o = new ViewerOrbit(s);
         o.Drag(100f, 50f);
         o.StepZoom(2f);
-        Assert.That(o.Reset(), Is.True);
-        Assert.That(o.Yaw, Is.EqualTo(20f).Within(Eps));
-        Assert.That(o.Pitch, Is.EqualTo(12f).Within(Eps));
-        Assert.That(o.Zoom, Is.EqualTo(1f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Reset(), Is.True);
+            Assert.That(o.Yaw, Is.EqualTo(20f).Within(Eps));
+            Assert.That(o.Pitch, Is.EqualTo(12f).Within(Eps));
+            Assert.That(o.Zoom, Is.EqualTo(1f).Within(Eps));
+        }
         Assert.That(o.Reset(), Is.False, "a second reset changes nothing");
     }
 
@@ -114,11 +129,17 @@ public class ViewerMathTests
     {
         var s = new ViewerSettings { StartYaw = 0f, StartPitch = 0f, RotateSpeed = 0.5f, PitchLimit = 30f };
         var o = new ViewerOrbit(s);
-        Assert.That(o.Drag(20f, 0f), Is.True);
-        Assert.That(o.Yaw, Is.EqualTo(-10f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Drag(20f, 0f), Is.True);
+            Assert.That(o.Yaw, Is.EqualTo(-10f).Within(Eps));
+        }
         o.Drag(0f, 1000f);
-        Assert.That(o.Pitch, Is.EqualTo(30f).Within(Eps));
-        Assert.That(o.Drag(0f, 10f), Is.False, "at the pitch limit a further drag down changes nothing");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Pitch, Is.EqualTo(30f).Within(Eps));
+            Assert.That(o.Drag(0f, 10f), Is.False, "at the pitch limit a further drag down changes nothing");
+        }
     }
 
     [Test]
@@ -130,9 +151,12 @@ public class ViewerMathTests
         Assert.That(o.Zoom, Is.LessThan(1f));
         o.Wheel(-1f);
         o.Wheel(-1f);
-        Assert.That(o.Zoom, Is.GreaterThan(1f));
-        Assert.That(o.Wheel(0f), Is.False);
-        Assert.That(log.Exists(l => l.Contains("ViewerOrbit: zoom")), Is.True, "zoom changes are logged");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Zoom, Is.GreaterThan(1f));
+            Assert.That(o.Wheel(0f), Is.False);
+            Assert.That(log.Exists(l => l.Contains("ViewerOrbit: zoom")), Is.True, "zoom changes are logged");
+        }
     }
 
     [Test]
@@ -141,13 +165,16 @@ public class ViewerMathTests
         var s = new ViewerSettings { RotateSpeed = 99f, ZoomStep = 0f, ZoomMax = float.NaN, FrameHeight = 5f, PitchLimit = 10f, StartPitch = 45f };
         var log = new List<string>();
         int changed = s.Clamp(log.Add);
-        Assert.That(changed, Is.EqualTo(5));
-        Assert.That(s.RotateSpeed, Is.EqualTo(ViewerSettings.RotateSpeedMax));
-        Assert.That(s.ZoomStep, Is.EqualTo(ViewerSettings.ZoomStepMin));
-        Assert.That(s.ZoomMax, Is.EqualTo(ViewerSettings.ZoomMaxDefault));
-        Assert.That(s.FrameHeight, Is.EqualTo(ViewerSettings.FrameHeightMin));
-        Assert.That(s.StartPitch, Is.EqualTo(10f));
-        Assert.That(log.Count, Is.EqualTo(6), "one line per fixed value + the summary");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.EqualTo(5));
+            Assert.That(s.RotateSpeed, Is.EqualTo(ViewerSettings.RotateSpeedMax));
+            Assert.That(s.ZoomStep, Is.EqualTo(ViewerSettings.ZoomStepMin));
+            Assert.That(s.ZoomMax, Is.EqualTo(ViewerSettings.ZoomMaxDefault));
+            Assert.That(s.FrameHeight, Is.EqualTo(ViewerSettings.FrameHeightMin));
+            Assert.That(s.StartPitch, Is.EqualTo(10f));
+            Assert.That(log.Count, Is.EqualTo(6), "one line per fixed value + the summary");
+        }
     }
 
     [Test]
@@ -155,10 +182,13 @@ public class ViewerMathTests
     {
         var s = new ViewerSettings { KeyLight = 5f, FillLight = -1f, Ambient = float.NaN };
         int changed = s.Clamp();
-        Assert.That(changed, Is.EqualTo(3));
-        Assert.That(s.KeyLight, Is.EqualTo(ViewerSettings.KeyLightMax));
-        Assert.That(s.FillLight, Is.EqualTo(ViewerSettings.FillLightMin));
-        Assert.That(s.Ambient, Is.EqualTo(ViewerSettings.AmbientDefault));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(changed, Is.EqualTo(3));
+            Assert.That(s.KeyLight, Is.EqualTo(ViewerSettings.KeyLightMax));
+            Assert.That(s.FillLight, Is.EqualTo(ViewerSettings.FillLightMin));
+            Assert.That(s.Ambient, Is.EqualTo(ViewerSettings.AmbientDefault));
+        }
     }
 
     [Test]
@@ -167,8 +197,11 @@ public class ViewerMathTests
         // user 2026-10-28: the pale-blue costume (brightest channel ~0.85 with the fur tips' x1.3) showed white: key + fill + ambient
         // facing the camera must stay below 1 for such a colour (the view has no tone mapping, every channel above 1 clips)
         float lit = ViewerSettings.KeyLightDefault + ViewerSettings.FillLightDefault + ViewerSettings.AmbientDefault;
-        Assert.That(0.85f * lit, Is.LessThan(1f), "light sum " + lit);
-        Assert.That(lit, Is.GreaterThan(0.8f), "and not too dark either");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(0.85f * lit, Is.LessThan(1f), "light sum " + lit);
+            Assert.That(lit, Is.GreaterThan(0.8f), "and not too dark either");
+        }
     }
 
     [Test]
@@ -187,11 +220,14 @@ public class ViewerMathTests
             {
                 ViewerMath.CameraAxes(yaw, pitch, out float rx, out float ry, out float rz, out float ux, out float uy, out float uz);
                 ViewerMath.Orbit(yaw, pitch, 1f, out float cx, out float cy, out float cz);   // camera position = minus the view direction
-                Assert.That(Math.Sqrt(rx * rx + ry * ry + rz * rz), Is.EqualTo(1.0).Within(Eps));
-                Assert.That(Math.Sqrt(ux * ux + uy * uy + uz * uz), Is.EqualTo(1.0).Within(Eps));
-                Assert.That(rx * ux + ry * uy + rz * uz, Is.EqualTo(0f).Within(Eps), "right and up are square, yaw " + yaw + " pitch " + pitch);
-                Assert.That(rx * cx + ry * cy + rz * cz, Is.EqualTo(0f).Within(Eps), "right is square to the view direction");
-                Assert.That(ux * cx + uy * cy + uz * cz, Is.EqualTo(0f).Within(Eps), "up is square to the view direction");
+                using (Assert.EnterMultipleScope())
+                {
+                    Assert.That(Math.Sqrt(rx * rx + ry * ry + rz * rz), Is.EqualTo(1.0).Within(Eps));
+                    Assert.That(Math.Sqrt(ux * ux + uy * uy + uz * uz), Is.EqualTo(1.0).Within(Eps));
+                    Assert.That(rx * ux + ry * uy + rz * uz, Is.EqualTo(0f).Within(Eps), "right and up are square, yaw " + yaw + " pitch " + pitch);
+                    Assert.That(rx * cx + ry * cy + rz * cz, Is.EqualTo(0f).Within(Eps), "right is square to the view direction");
+                    Assert.That(ux * cx + uy * cy + uz * cz, Is.EqualTo(0f).Within(Eps), "up is square to the view direction");
+                }
             }
         }
     }
@@ -200,14 +236,20 @@ public class ViewerMathTests
     public void ClampLength_KeepsTheDirection_AndReportsShortening()
     {
         float x = 3f, y = 4f, z = 0f;
-        Assert.That(ViewerMath.ClampLength(ref x, ref y, ref z, 1f), Is.True);
-        Assert.That(x, Is.EqualTo(0.6f).Within(Eps));
-        Assert.That(y, Is.EqualTo(0.8f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ViewerMath.ClampLength(ref x, ref y, ref z, 1f), Is.True);
+            Assert.That(x, Is.EqualTo(0.6f).Within(Eps));
+            Assert.That(y, Is.EqualTo(0.8f).Within(Eps));
+        }
         float a = 0.1f, b = 0.1f, c = 0f;
         Assert.That(ViewerMath.ClampLength(ref a, ref b, ref c, 1f), Is.False, "inside the limit nothing changes");
         float n = float.NaN, m = 1f, o = 1f;
-        Assert.That(ViewerMath.ClampLength(ref n, ref m, ref o, 1f), Is.True);
-        Assert.That(new[] { n, m, o }, Is.EqualTo(new[] { 0f, 0f, 0f }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(ViewerMath.ClampLength(ref n, ref m, ref o, 1f), Is.True);
+            Assert.That(new[] { n, m, o }, Is.EqualTo(new[] { 0f, 0f, 0f }));
+        }
     }
 
     [Test]
@@ -215,10 +257,13 @@ public class ViewerMathTests
     {
         var s = new ViewerSettings { StartYaw = 0f, StartPitch = 0f, PanSpeed = 1f, PanLimit = 3f };
         var o = new ViewerOrbit(s);
-        Assert.That(o.Pan(100f, 0f, 400f), Is.True);
-        Assert.That(o.PanX, Is.EqualTo(-0.25f).Within(Eps), "100 px of a 400 px frame = a quarter of the view height, model follows the mouse right");
-        Assert.That(o.PanY, Is.EqualTo(0f).Within(Eps));
-        Assert.That(o.PanZ, Is.EqualTo(0f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Pan(100f, 0f, 400f), Is.True);
+            Assert.That(o.PanX, Is.EqualTo(-0.25f).Within(Eps), "100 px of a 400 px frame = a quarter of the view height, model follows the mouse right");
+            Assert.That(o.PanY, Is.EqualTo(0f).Within(Eps));
+            Assert.That(o.PanZ, Is.EqualTo(0f).Within(Eps));
+        }
         o.Pan(0f, 40f, 400f);
         Assert.That(o.PanY, Is.EqualTo(0.1f).Within(Eps), "the model moved down, so the look-at point went up");
     }
@@ -244,15 +289,21 @@ public class ViewerMathTests
         var s = new ViewerSettings { StartYaw = 90f, StartPitch = 0f, PanSpeed = 1f, PanLimit = 0.5f };
         var o = new ViewerOrbit(s);
         o.Pan(100f, 0f, 400f);                                      // camera on -X looking +X: its right is -Z, so the look-at point moves +Z
-        Assert.That(o.PanX, Is.EqualTo(0f).Within(Eps));
-        Assert.That(o.PanZ, Is.EqualTo(0.25f).Within(Eps));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.PanX, Is.EqualTo(0f).Within(Eps));
+            Assert.That(o.PanZ, Is.EqualTo(0.25f).Within(Eps));
+        }
         o.Pan(1000f, 0f, 400f);
         Assert.That(o.PanZ, Is.EqualTo(0.5f).Within(Eps), "limited to PanLimit");
         var log = new List<string>();
         var l = new ViewerOrbit(s, log.Add);
         l.Pan(1000f, 0f, 400f);
-        Assert.That(l.Pan(10f, 0f, 400f), Is.False, "at the limit a further drag in the same direction changes nothing");
-        Assert.That(log.Exists(t => t.Contains("pan at the limit")), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(l.Pan(10f, 0f, 400f), Is.False, "at the limit a further drag in the same direction changes nothing");
+            Assert.That(log.Exists(t => t.Contains("pan at the limit")), Is.True);
+        }
     }
 
     [Test]
@@ -260,22 +311,31 @@ public class ViewerMathTests
     {
         var log = new List<string>();
         var o = new ViewerOrbit(new ViewerSettings(), log.Add);
-        Assert.That(o.Pan(float.NaN, 1f, 400f), Is.False);
-        Assert.That(o.Pan(10f, 10f, 0f), Is.False, "no frame height, nothing to measure against");
-        Assert.That(log.Exists(t => t.Contains("frame height")), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.Pan(float.NaN, 1f, 400f), Is.False);
+            Assert.That(o.Pan(10f, 10f, 0f), Is.False, "no frame height, nothing to measure against");
+            Assert.That(log.Exists(t => t.Contains("frame height")), Is.True);
+        }
         o.Pan(50f, 30f, 400f);
-        Assert.That(o.PanX != 0f || o.PanY != 0f || o.PanZ != 0f, Is.True);
-        Assert.That(o.Reset(), Is.True, "a panned view is not the default view");
-        Assert.That(new[] { o.PanX, o.PanY, o.PanZ }, Is.EqualTo(new[] { 0f, 0f, 0f }));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(o.PanX != 0f || o.PanY != 0f || o.PanZ != 0f, Is.True);
+            Assert.That(o.Reset(), Is.True, "a panned view is not the default view");
+            Assert.That(new[] { o.PanX, o.PanY, o.PanZ }, Is.EqualTo(new[] { 0f, 0f, 0f }));
+        }
     }
 
     [Test]
     public void Settings_Clamp_PanValuesAreRanged()
     {
         var s = new ViewerSettings { PanSpeed = 99f, PanLimit = -1f };
-        Assert.That(s.Clamp(), Is.EqualTo(2));
-        Assert.That(s.PanSpeed, Is.EqualTo(ViewerSettings.PanSpeedMax));
-        Assert.That(s.PanLimit, Is.EqualTo(ViewerSettings.PanLimitMin));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(s.Clamp(), Is.EqualTo(2));
+            Assert.That(s.PanSpeed, Is.EqualTo(ViewerSettings.PanSpeedMax));
+            Assert.That(s.PanLimit, Is.EqualTo(ViewerSettings.PanLimitMin));
+        }
     }
 
     [Test]

@@ -23,8 +23,11 @@ public class SuiteRulesTests
     {
         var listed = ((System.Collections.ArrayList)Suite()["tests"]).Cast<string>().ToList();
         var files = TestFiles().Select(Path.GetFileNameWithoutExtension).ToList();
-        Assert.That(files.Except(listed), Is.Empty, "test files not in suite.json");
-        Assert.That(listed.Except(files), Is.Empty, "suite.json lists missing tests");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(files.Except(listed), Is.Empty, "test files not in suite.json");
+            Assert.That(listed.Except(files), Is.Empty, "suite.json lists missing tests");
+        }
     }
 
     [Test] public void EveryTest_ChecksNoErrorsOfThisMod()

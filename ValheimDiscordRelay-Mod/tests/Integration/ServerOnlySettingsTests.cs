@@ -62,7 +62,10 @@ public class ServerOnlySettingsTests
     {
         var channel = File.ReadAllText(Path.Combine(TestPaths.ModDir, "src", "Shared", "Server", "AdminSettingsChannel.cs"));
 
-        Assert.That(channel, Does.Contain("IsAdminPeer(peer)"), "a request must be checked against the adminlist");
-        Assert.That(Regex.Matches(Src, @"SyncedConfig\.BindLock").Count, Is.EqualTo(1), "ServerSync allows exactly one locking entry");
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(channel, Does.Contain("IsAdminPeer(peer)"), "a request must be checked against the adminlist");
+            Assert.That(Regex.Matches(Src, @"SyncedConfig\.BindLock"), Has.Count.EqualTo(1), "ServerSync allows exactly one locking entry");
+        }
     }
 }

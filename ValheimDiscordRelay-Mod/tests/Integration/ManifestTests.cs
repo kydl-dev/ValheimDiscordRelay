@@ -64,8 +64,11 @@ public class ManifestTests
     {
         var heading = File.ReadLines(ModFile("CHANGELOG.md")).FirstOrDefault(l => Regex.IsMatch(l, @"^## \d+\.\d+\.\d+"));
 
-        Assert.That(heading, Is.Not.Null, "no '## x.y.z' heading in CHANGELOG.md");
-        Assert.That(Regex.Match(heading, @"\d+\.\d+\.\d+").Value, Is.EqualTo(Str("version_number")));
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(heading, Is.Not.Null, "no '## x.y.z' heading in CHANGELOG.md");
+            Assert.That(Regex.Match(heading, @"\d+\.\d+\.\d+").Value, Is.EqualTo(Str("version_number")));
+        }
     }
 
     [Test]
@@ -73,8 +76,11 @@ public class ManifestTests
     {
         var deps = Dependencies();
         foreach (var d in deps) Assert.That(DependencyFormat.IsMatch(d), Is.True, "bad dependency string: " + d);
-        Assert.That(deps.Any(d => d.IndexOf("BepInExPack_Valheim", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
-        Assert.That(deps.Any(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+        using (Assert.EnterMultipleScope())
+        {
+            Assert.That(deps.Any(d => d.IndexOf("BepInExPack_Valheim", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+            Assert.That(deps.Any(d => d.IndexOf("Jotunn", StringComparison.OrdinalIgnoreCase) >= 0), Is.True);
+        }
     }
 
     /// The KydlCore version asked for by the plugin attribute: [BepInDependency(KydlCore.Bootstrap.Plugin.ModGuid, "x.y.z")] (or the GUID text).
