@@ -6,6 +6,6 @@
   "dependencies": [
     "denikson-BepInExPack_Valheim-5.4.2351",
     "ValheimModding-Jotunn-2.30.2",
-    "KydlDev-KydlCore-0.1.0"
+    "KydlDev-KydlCore-1.0.0"
   ]
 }

@@ -31,13 +31,13 @@ internal static class TestPaths
     /// The TestLab suite folder of this mod.
     public static string SuiteDir { get { return Path.Combine(TestsRoot, "TestLab", "suites", "ValheimDiscordRelay"); } }
 
-    /// Game / BepInEx / Jotunn DLLs: the central E:\Projects\Valheim\Claude\ref. KYDL_REF_DIR overrides (e.g. the installed game's Managed folder).
+    /// Game / BepInEx / Jotunn DLLs: the central <workspace>\Claude\ref. KYDL_REF_DIR overrides (e.g. the installed game's Managed folder).
     public static string RefDir { get { return Env("KYDL_REF_DIR") ?? Path.GetFullPath(Path.Combine(ProjectRoot, "..", "Claude", "ref")); } }
 
     /// The built mod (the copy in assets\ is the real one, MIGRATION_DECISIONS A8). KYDL_MOD_DLL overrides.
     public static string ModDll { get { return Env("KYDL_MOD_DLL") ?? Path.Combine(ModDir, "assets", "ValheimDiscordRelay.dll"); } }
 
-    /// KydlCore.dll, which every mod requires: the built KydlCore next to this project (E:\Projects\Valheim\KydlCore). KYDL_CORE_DLL overrides.
+    /// KydlCore.dll, which every mod requires: the built KydlCore next to this project (<workspace>\KydlCore). KYDL_CORE_DLL overrides.
     public static string CoreDll
     {
         get

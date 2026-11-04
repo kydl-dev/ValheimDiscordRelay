@@ -3,7 +3,7 @@
     Shared settings for every test project in this folder.
     * net48 = the runtime family the game's Mono is closest to.
     * NuGet packages are restored INTO this folder (.nuget\packages), never into the user profile (PROJECT_RULES "Nothing outside the Valheim folder").
-    * Game / BepInEx / Jotunn DLLs come from the central E:\Projects\Valheim\Claude\ref. To test against the installed game instead:
+    * Game / BepInEx / Jotunn DLLs come from the central <workspace>\Claude\ref. To test against the installed game instead:
         dotnet test -p:ValheimRefs="C:\...\Valheim\valheim_Data\Managed"   (and set KYDL_REF_DIR to the same folder)
     * Lives in ValheimDiscordRelay-Mod\tests (MIGRATION_DECISIONS A1). Run: build the mod first, then  dotnet test "ValheimDiscordRelay-Mod\tests\Unit"  and  dotnet test "ValheimDiscordRelay-Mod\tests\Integration"
       (release gates only: add the filter TestCategory=ReleaseGate)

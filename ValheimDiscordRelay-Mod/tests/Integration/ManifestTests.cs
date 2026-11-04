@@ -97,7 +97,7 @@ public class ManifestTests
     [Test]
     public void KydlCore_Dependency_IsNotNewerThanTheKydlCoreTheModIsBuiltAgainst()
     {
-        // the KydlCore project next to this one (E:\Projects\Valheim\KydlCore): its manifest.json version is the newest KydlCore there is (KydlCore.dll carries no file version)
+        // the KydlCore project next to this one (<workspace>\KydlCore): its manifest.json version is the newest KydlCore there is (KydlCore.dll carries no file version)
         var manifest = Environment.GetEnvironmentVariable("KYDL_CORE_MANIFEST") ?? Path.GetFullPath(Path.Combine(TestPaths.ProjectRoot, "..", "KydlCore", "KydlCore-Mod", "manifest.json"));
         Assume.That(File.Exists(manifest), "KydlCore manifest.json not found (set KYDL_CORE_MANIFEST)");
         var core = (Dictionary<string, object>)new JavaScriptSerializer().DeserializeObject(File.ReadAllText(manifest));
