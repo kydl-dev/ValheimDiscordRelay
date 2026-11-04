@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Unit tests: pure logic, no game running. Logic worth testing lives in classes without Unity / Valheim types; link those files here
-       (<Compile Include="..\..\src\...\X.cs" Link="Mod\X.cs" />) or reach them in the built DLL through ModAssembly.
+       (<Compile Include="..\..\src\...\X.cs" Link="Mod\X.cs" Condition="'$(KydlQuality)' != 'true'" />) or reach them in the built DLL through ModAssembly.
        Unity's plain value types (Vector3, Bounds, Mathf, Color) are managed code and work here; anything that calls into the engine
        (ColorUtility.TryParseHtmlString, GameObject, ...) does not - test that in game (InGameTests).
        How good the tests are: _agent\tools\test-quality.ps1 (coverage + mutation score, the shared TEST_QUALITY.md). -->
@@ -9,9 +9,12 @@
     <RootNamespace>ValheimDiscordRelay.Tests.Unit</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="..\..\src\Core\Functions.cs" Link="Mod\Functions.cs" />
-    <Compile Include="..\..\src\Core\TextLimit.cs" Link="Mod\TextLimit.cs" />
-    <Compile Include="..\..\src\Features\Chat\Domain\DiscordNameFallback.cs" Link="Mod\DiscordNameFallback.cs" />
+    <Compile Include="..\..\src\Core\Functions.cs" Link="Mod\Functions.cs" Condition="'$(KydlQuality)' != 'true'" />
+    <Compile Include="..\..\src\Core\TextLimit.cs" Link="Mod\TextLimit.cs" Condition="'$(KydlQuality)' != 'true'" />
+    <Compile Include="..\..\src\Features\Chat\Domain\DiscordNameFallback.cs" Link="Mod\DiscordNameFallback.cs" Condition="'$(KydlQuality)' != 'true'" />
+    <Compile Include="..\..\src\Features\Chat\Domain\ChatRateLimiter.cs" Link="Mod\ChatRateLimiter.cs" Condition="'$(KydlQuality)' != 'true'" />
+    <Compile Include="..\..\src\Features\BossDeath\Domain\BossCatalog.cs" Link="Mod\BossCatalog.cs" Condition="'$(KydlQuality)' != 'true'" />
+    <Compile Include="..\..\src\Shared\RelayDiagnostics.cs" Link="Mod\RelayDiagnostics.cs" Condition="'$(KydlQuality)' != 'true'" />
     <!-- shared 3D viewer (from WhipItUp, user 2026-10-27): its pure math is tested here -->
     <Compile Include="..\..\..\ValheimDiscordRelay-Unity\Assets\ValheimDiscordRelay_UI\Runtime\ViewerSettings.cs" Link="Ui\ViewerSettings.cs" />
     <Compile Include="..\..\..\ValheimDiscordRelay-Unity\Assets\ValheimDiscordRelay_UI\Runtime\ViewerMath.cs" Link="Ui\ViewerMath.cs" />
@@ -19,5 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine.CoreModule"><HintPath>$(ValheimRefs)\UnityEngine.CoreModule.dll</HintPath><Private>true</Private></Reference>
+    <!-- RelayDiagnostics (linked for ChatRateLimiter) calls KydlCore's ModLog; the tests never reach it (they pass their own warning sink) -->
+    <Reference Include="KydlCore"><HintPath>$(MSBuildThisFileDirectory)..\..\..\..\KydlCore\KydlCore-Mod\assets\KydlCore.dll</HintPath><Private>true</Private></Reference>
   </ItemGroup>
 </Project>

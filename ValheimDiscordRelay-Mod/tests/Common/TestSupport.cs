@@ -69,6 +69,9 @@ internal static class ModAssembly
     {
         if (_asm != null) return _asm;
         if (!File.Exists(TestPaths.ModDll)) throw new FileNotFoundException("Built mod DLL not found. Build the mod first (dotnet build).", TestPaths.ModDll);
+        // test-quality run (KydlQuality=true, _agent\tools\test-quality.ps1): the mod is a project reference and Stryker mutates / instruments THAT
+        // assembly in the default load context. LoadFrom(path) can hand the tests another copy, so no mutant would ever be covered or killed.
+        if (Environment.GetEnvironmentVariable("KydlQuality") == "true") return _asm = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(TestPaths.ModDll)));
         return _asm = Assembly.LoadFrom(TestPaths.ModDll);
     }
 

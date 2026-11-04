@@ -38,7 +38,12 @@ internal static class ChatRateLimiter
     /// <returns>True if this chat line may be relayed.</returns>
     internal static bool Allow(long sender, string playerName)
     {
-        DateTime now = DateTime.UtcNow;
+        return Allow(sender, playerName, DateTime.UtcNow, RelayDiagnostics.Warning);
+    }
+
+    /// <summary>The same with the clock and the warning sink passed in (unit tests).</summary>
+    internal static bool Allow(long sender, string playerName, DateTime now, Action<string> warn)
+    {
 
         ChatBucket bucket;
         if (!ChatBuckets.TryGetValue(sender, out bucket))
@@ -48,6 +53,7 @@ internal static class ChatRateLimiter
                 ChatBuckets.Clear();
 
             bucket = new ChatBucket();
+            bucket.LastUtc = now;
             ChatBuckets[sender] = bucket;
         }
 
@@ -64,7 +70,7 @@ internal static class ChatRateLimiter
         if ((now - bucket.LastWarnUtc).TotalSeconds >= 30.0)
         {
             bucket.LastWarnUtc = now;
-            RelayDiagnostics.Warning("Chat relay from '" + playerName + "' (" + sender + ") is sending too fast; extra lines are not sent to Discord.");
+            warn("Chat relay from '" + playerName + "' (" + sender + ") is sending too fast; extra lines are not sent to Discord.");
         }
 
         return false;

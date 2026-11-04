@@ -96,3 +96,6 @@ ValheimDiscordRelay-Mod/WebP/webp-download/
 # SonarQube scanner work files (H30/H31)
 .sonarqube/
 **/tests/_quality/sonar-coverage/
+
+/*-Mod/tests/_quality/
+/*-Mod/release/
